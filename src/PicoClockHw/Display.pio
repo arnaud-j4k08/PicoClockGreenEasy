@@ -1,0 +1,43 @@
+.program send_pixels
+.side_set 1                     ; For CLK
+    ; Set the IRQ so that the other SM, running the select_rows program, initially waits
+    irq 0               side 0  
+.wrap_target
+    pull                side 0
+    set x, 31           side 0  ; 32 iterations to send each pixel of the row
+loop:
+    ; Use delays to slow down data transmission a bit, as the SM16106 cannot follow 
+    ; otherwise.
+    out pins, 1     [1] side 0  ; Set SDI to the bit of the pixel to send
+    jmp x-- loop    [1] side 1  ; Loop, and sideset CLK to high so that the SM16106 takes the pixel
+
+    ; Latch to the matrix controler (the set instruction on pins is configured to set LE)
+    set pins, 1         side 0  
+    set pins, 0         side 0
+
+    irq clear 0         side 0  ; Tell the other SM to make one step
+.wrap
+
+.program select_rows
+.side_set 1                 ; For A2
+.wrap_target
+    ; The following sequence of instructions repeatedly wait for the other SM running the send_pixels 
+    ; program, then select the row by setting A0, A1 and A2. Note that there is a pin between A0 and 
+    ; A1 that is not set, but occupies bit 1 of the binary values below.
+    irq wait 0      side 1  ; Keep A2 set to 1 when coming from the previous iteration of the loop
+    set pins, 0b000 side 0  ; row 0
+    irq wait 0      side 0
+    set pins, 0b001 side 0  ; row 1
+    irq wait 0      side 0
+    set pins, 0b100 side 0  ; row 2
+    irq wait 0      side 0
+    set pins, 0b101 side 0  ; row 3
+    irq wait 0      side 0
+    set pins, 0b000 side 1  ; row 4
+    irq wait 0      side 1
+    set pins, 0b001 side 1  ; row 5
+    irq wait 0      side 1
+    set pins, 0b100 side 1  ; row 6
+    irq wait 0      side 1
+    set pins, 0b101 side 1  ; row 7
+.wrap
