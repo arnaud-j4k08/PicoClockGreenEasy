@@ -28,9 +28,16 @@ public:
         return &m_functions;
     }
 
-private:
+protected:
+    void setName(const std::string &name)
+    {
+        m_name = name;
+    }
+
     void renderFrame(
         Bitmap &frame, int editedValueIndex, int blinkingCounter, bool fullRefresh) override;
+
+private:
     void activate() override;
     int valueCount() const override
     {

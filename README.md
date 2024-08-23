@@ -20,10 +20,11 @@ An easy-to-use firmware for the Waveshare Pico-Clock-Green, written in C++
     - 3 time display styles: hour:min:sec, hour:min + bar (the bar is a kind of horizontal hourglass to show seconds), hour:min
     - NTP synchronization over Wi-Fi (requires a development environment to set the SSID and password)
     - persistent saving of clock settings to flash memory
-    - "sleep mode" when auto light is enabled that makes the display very dim if the room is dark and no button has been used for a while
     - optional hourly chime activation using the ambient light sensor
+    - sleep mode: when auto light is enabled, this makes the display very dim if the room is dark and no button has been used for a while
+    - next alarm: displays next time and weekday when an alarm will ring, so that the user can quickly check if the alarm was set correctly before sleeping
+    - skip next alarm: e.g. if you woke up before the alarm time or the next day is a national holiday, activate this function and the next alarm (and only this one) will be skipped. This is shown by the slow blinking of the "Alarm On" indicator.
     - gradual alarm mode that progressively increases the duration of beeps to wake up gently
-    - "skip next alarm" function: e.g. if you woke up before the alarm time or the next day is a national holiday, activate this function and the next alarm (and only this one) will be skipped. This is shown by the slow blinking of the "Alarm On" indicator.
 
 ## Technical features
 - support for Pico and Pico W
@@ -102,7 +103,7 @@ This is the full definition of the menu structure. Use the "enter/set" button to
 - time in hour:min style &rarr; set hour &rarr; set min
 - date &rarr; set year &rarr; set month &rarr; set day
 - temperature: toggle Celcius/Fahrenheit
-- alarms: enter submenu
+- alarms (with next alarm time and weekday if an alarm is activated): enter submenu
     - (if an alarm is activated) skip next alarm: toggle on/off
     - alarm 1 &rarr; set mode &rarr; set hour &rarr; set min &rarr; set weekdays
     - alarm 2 &rarr; set mode &rarr; set hour &rarr; set min &rarr; set weekdays

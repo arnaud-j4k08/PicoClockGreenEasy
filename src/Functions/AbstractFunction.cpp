@@ -250,6 +250,8 @@ void AbstractFunction::setCurrentMenu(
             }
         }
     }
+
+    menu->at(m_clockUi->m_curFuncIdx)->onSelect();
 }
 
 void AbstractFunction::select()

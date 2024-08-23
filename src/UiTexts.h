@@ -23,6 +23,7 @@ enum class TextId
     AuthenticationFailed,
 
     // For alarms
+    NextColon,
     AlarmShortened1Colon,
     AlarmShortened2Colon,
     Loud,

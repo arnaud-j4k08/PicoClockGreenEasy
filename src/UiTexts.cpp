@@ -20,6 +20,7 @@ namespace
             "No network found",
             "Authentication failed",
 
+            "Next: ",
             "Al 1: ",
             "Al 2: ",
             "Loud",

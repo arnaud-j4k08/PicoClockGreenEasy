@@ -21,6 +21,22 @@ static ProportionalCharacter narrowFontChars[] =
                 0b0,
                 0b0 } },
 
+    {'(', 2, {  0b01,
+                0b10,
+                0b10,
+                0b10,
+                0b10,
+                0b10,
+                0b01 } },
+
+    {')', 2, {  0b10,
+                0b01,
+                0b01,
+                0b01,
+                0b01,
+                0b01,
+                0b10 } },
+
     {'0', 3, {  0b010,
                 0b101,
                 0b101,

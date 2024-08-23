@@ -27,8 +27,9 @@ public:
         m_rtcSync = SyncingToRtc;
     }
     
-    void tick(bool &clockAdjusted, AlarmId &reachedAlarm);
+    void tick(bool &clockAdjusted, AlarmId &reachedAlarm, Settings &settings);
     void setAlarm(AlarmId id, const Settings::Alarm &al);
+    bool nextAlarm(int &weekday, int &hour, int &min, const Settings::Values &settings) const;
 
     bool isAlarmOn() const
     {
@@ -61,8 +62,23 @@ public:
     }
 
 private:
+    struct Time
+    {
+        // Initialize with too high values, so that isValid returns false by default, and another
+        // object with valid time is regarded as smaller.
+        int hour = 99;
+        int min = 99;
+
+        bool operator <(const Time &other) const;
+        bool operator <=(const Time &other) const;
+        bool isValid() const;
+    };
+
     void onNtpTimeReceived(time_t utcTime, uint32_t ms);
     bool alarmReached(AlarmId id) const;
+    bool nextAlarmAfter(
+        int startWeekday, const Time &startTime, int &weekday, Clock::Time &time) const;
+    Time alarmTimeAtDay(AlarmId alarmId, int weekday) const;
 
     enum RtcSync
     {

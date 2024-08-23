@@ -10,6 +10,7 @@
 #include "Functions/Countdown.h"
 #include "Functions/Date.h"
 #include "Functions/Options.h"
+#include "Functions/AlarmSubmenu.h"
 #include "Functions/SkipNextAlarm.h"
 #include "Functions/Stopwatch.h"
 #include "Functions/Submenu.h"
@@ -58,7 +59,7 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE)
     m_dateFuncIdx = addFunction<Date>();
     m_temperatureFuncIdx = addFunction<Temperature>();
     Submenu *alarmSubmenu =
-        addFunctionAndReturnPtr<Submenu>(uiText(TextId::Alarms), &m_rootMenu);
+        addFunctionAndReturnPtr<AlarmSubmenu>(&m_rootMenu);
     Submenu *countdownSubmenu = 
         addFunctionAndReturnPtr<Submenu>(uiText(TextId::Countdown), &m_rootMenu);
     Submenu *stopwatchSubmenu = 
@@ -86,6 +87,8 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE)
         m_lastUsedTimeFunction = m_curFuncIdx;
     else
         m_lastUsedTimeFunction = hourMinBarFuncIdx; // Default to hour:min:bar
+
+    m_currentMenu->at(m_curFuncIdx)->onSelect();
 
     // Setup display and turn it on
     m_frameBuffer.setDrawOrigin(Display::MATRIX_LEFT, Display::MATRIX_TOP);
@@ -119,7 +122,7 @@ void ClockUi::onFrameCallback()
     // Make the clock and some functions tick
     bool clockAdjusted = false;
     Clock::AlarmId reachedAlarm = Clock::NoAlarm;
-    m_clock.tick(clockAdjusted, reachedAlarm);
+    m_clock.tick(clockAdjusted, reachedAlarm, m_settings);
     m_countdownFunc->tick();
     m_stopwatchFunc->tick();
 
@@ -127,19 +130,13 @@ void ClockUi::onFrameCallback()
     if (clockAdjusted)
         m_forceRefresh = true;
     
-    // Ring if an alarm was reached.
+    // Start ringing if an alarm was reached.
     if (reachedAlarm != Clock::NoAlarm)
     {
-        if (m_settings.get().skipNextAlarm)
-        {
-            // This alarm must be skipped. Disable the function and do not ring.
-            m_settings.modify().skipNextAlarm = false;
-        } else
-        {
-            m_alarmRinging = 
-                reachedAlarm == Clock::Alarm1 ? m_settings.get().alarm1.mode : m_settings.get().alarm2.mode;
-            m_ringingForSecs = 0;
-        }
+        m_alarmRinging = 
+            reachedAlarm == Clock::Alarm1 ? 
+            m_settings.get().alarm1.mode : m_settings.get().alarm2.mode;
+        m_ringingForSecs = 0;
     }
 
     adjustBrightness();
@@ -573,6 +570,8 @@ void ClockUi::onUpOrDownButtonPressed(AbstractFunction::Direction direction)
 
         // Initialize the scrolling for functions that use it. For other functions, it has no effect.
         initHorizScrolling();
+
+        m_currentMenu->at(m_curFuncIdx)->onSelect();
     } 
     else
     {

@@ -24,6 +24,7 @@ add_executable( ${PROJECT_NAME}
 
                 src/Functions/AbstractFunction.cpp
                 src/Functions/Alarm.cpp
+                src/Functions/AlarmSubmenu.cpp
                 src/Functions/Countdown.cpp
                 src/Functions/Date.cpp
                 src/Functions/Options.cpp            

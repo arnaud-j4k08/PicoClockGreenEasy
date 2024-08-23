@@ -47,6 +47,10 @@ public:
     {
         return 1; // For the value that cannot be edited
     }
+
+    // Called when a function was just selected on the display
+    virtual void onSelect()
+    {}
     
     virtual void startEditingValue(int valueIndex) {}
     virtual void modifyValue(int valueIndex, Direction direction) {}

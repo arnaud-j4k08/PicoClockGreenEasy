@@ -51,7 +51,7 @@ void Clock::onNtpTimeReceived(time_t utcTime, uint32_t ms)
     m_rtcSync = SyncingToRtc;
 }
 
-void Clock::tick(bool &clockAdjusted, AlarmId &reachedAlarm)
+void Clock::tick(bool &clockAdjusted, AlarmId &reachedAlarm, Settings &settings)
 {
     clockAdjusted = false;
     reachedAlarm = NoAlarm;
@@ -103,6 +103,14 @@ void Clock::tick(bool &clockAdjusted, AlarmId &reachedAlarm)
             reachedAlarm = Alarm1;
         else if (alarmReached(Alarm2))
             reachedAlarm = Alarm2;
+
+        if (reachedAlarm != NoAlarm && settings.get().skipNextAlarm)
+        {
+            // This alarm must be skipped. Disable the "skip next alarm" function and do not report 
+            // that an alarm was reached
+            settings.modify().skipNextAlarm = false;
+            reachedAlarm = NoAlarm;
+        }
     }
 
     if (m_clockAdjusted)
@@ -124,6 +132,75 @@ void Clock::setAlarm(AlarmId id, const Settings::Alarm &al)
     m_alarm[id] = al;
 }
 
+bool Clock::nextAlarm(int &weekday, int &hour, int &min, const Settings::Values &settings) const
+{
+    // Figure out what is the next alarm after now
+    Time time;
+    if (!nextAlarmAfter(m_tm.tm_wday, {m_tm.tm_hour, m_tm.tm_min}, weekday, time))
+        return false; // No alarm enabled
+
+    // If this alarm will be skipped, get the next alarm after it
+    if (settings.skipNextAlarm)
+    {
+        if (!nextAlarmAfter(weekday, time, weekday, time))
+            return false; // No other alarm enabled (cannot happen for the moment, but may change)
+    }
+
+    // deliver the result
+    hour = time.hour;
+    min = time.min;
+    return true;
+}
+
+bool Clock::nextAlarmAfter(
+        int startWeekday, const Time &startTime, int &weekday, Time &time) const
+{
+    // Check if there is an alarm later on the start day
+    Time t1 = alarmTimeAtDay(Alarm1, startWeekday);
+    if (t1 <= startTime)
+        t1 = Time(); // Alarm already passed
+    Time t2 = alarmTimeAtDay(Alarm2, startWeekday);
+    if (t2 <= startTime)
+        t2 = Time(); // Alarm already passed
+
+    // Return the earliest reacheable alarm on the start day if one was found.
+    time = std::min(t1, t2);
+    if (time.isValid())
+    {
+        weekday = startWeekday;
+        return true;
+    }
+
+    // Check the following 7 weekdays, wrapping around to the same weekday in 7 days
+    CyclicCounter currentWeekDay{7, startWeekday};
+    for (int i = 0; i < 7; i++)
+    {
+        currentWeekDay.increment();
+        t1 = alarmTimeAtDay(Alarm1, currentWeekDay);
+        t2 = alarmTimeAtDay(Alarm2, currentWeekDay);
+
+        // Return the earliest reacheable alarm on this day if one was found.
+        time = std::min(t1, t2);
+        if (time.isValid())
+        {
+            weekday = currentWeekDay;
+            return true;
+        }
+    }
+
+    // No next alarm found
+    return false;
+}
+
+Clock::Time Clock::alarmTimeAtDay(AlarmId alarmId, int weekday) const
+{
+    if (m_alarm[alarmId].mode != Settings::AlarmMode::Off &&
+        m_alarm[alarmId].enabledOnWeekDay(weekday))
+        return {m_alarm[alarmId].hour, m_alarm[alarmId].min};
+    else
+        return Time();
+}
+
 bool Clock::alarmReached(AlarmId id) const
 {
     const Settings::Alarm &al = m_alarm[id];
@@ -133,3 +210,23 @@ bool Clock::alarmReached(AlarmId id) const
         al.enabledOnWeekDay(m_tm.tm_wday) && 
         al.mode != Settings::AlarmMode::Off;
 }
+
+bool Clock::Time::operator <(const Time &other) const
+{
+    if (hour < other.hour)
+        return true;
+    if (hour > other.hour)
+        return false;
+    return min < other.min;
+}
+
+bool Clock::Time::operator <=(const Time &other) const
+{
+    return !(other < *this);
+}
+
+bool Clock::Time::isValid() const
+{
+    return hour >= 0 && hour < 24 && min >= 0 && min < 60;
+}
+
