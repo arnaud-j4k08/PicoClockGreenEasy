@@ -250,25 +250,16 @@ bool Display::rowScan()
 }
 #endif // DISPLAY_PIO
 
-int Display::ambientLight(int *rawValue) const
+float Display::ambientLight() const
 {
     uint16_t adc = 4095 - adc_read();
-    int measured = adc * 100 / 4095;
 
-    if (rawValue != nullptr)
-        *rawValue = adc;
-
-    // Use an hysteresis to avoid noise and improve stability
-    if (measured > m_ambientLight + AMBIENT_LIGHT_HYSTERESIS || 
-        measured < m_ambientLight - AMBIENT_LIGHT_HYSTERESIS)
-        m_ambientLight = measured;
-
-    TRACE <<"Adc:" <<adc <<"Measured:" <<measured <<"result:" <<m_ambientLight;
-
-    return m_ambientLight;
+    // Stabilize the output of the DAC using a filter
+    m_ambientLightFilter.put(adc * 100.0f / 4095);
+    return m_ambientLightFilter.get();
 }
 
-void Display::setBrightness(int percent)
+void Display::setBrightness(float percent)
 {
     if (percent < 0)
         percent = 0;
@@ -276,9 +267,8 @@ void Display::setBrightness(int percent)
         percent = 100;
 
     TRACE << "Set brightness to" << percent << "%";
-    m_brightness = percent;
 
     // OE is active low, so reverse the percentage.
     // Also set a level of at least 1 so that the display does not completely turn off.
-    pwm_set_gpio_level(OE, PWM_WRAP - std::max(1, percent * PWM_WRAP / 100));
+    pwm_set_gpio_level(OE, PWM_WRAP - std::max(1.0f, percent * PWM_WRAP / 100));
 }

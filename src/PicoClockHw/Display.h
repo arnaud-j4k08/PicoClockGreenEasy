@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utils/CyclicCounter.h"
+#include "Utils/MovingAverage.h"
 
 #include <functional>
 #include <pico/time.h>
@@ -35,22 +36,17 @@ public:
         return m_instance;
     }
 
-    // Return a value from 0 (dark) to 100 (bright). Additionally, the raw value (without 
-    // stabilization and not as percentage) can be retrieved.
-    int ambientLight(int *rawValue = nullptr) const; 
+    // Return a value from 0 (dark) to 100 (bright).
+    float ambientLight() const; 
     
-    int brightness() const
-    {
-        return m_brightness;
-    }
-    void setBrightness(int percent);
+    void setBrightness(float percent);
 
 private:
     static Display *m_instance;
     const uint32_t *m_frameBuffer;
     std::function<void(Display &)> m_frameCallback;
     mutable int m_ambientLight = 0;
-    int m_brightness = 0;
+    mutable MovingAverage<256> m_ambientLightFilter {0};
 
 #ifdef DISPLAY_PIO
     void initSendPixelsPioStateMachine();

@@ -25,9 +25,7 @@ namespace
 {
     const int BUTTON_REPEAT_DELAY = 500;
     const int DAY_MODE_BRIGHTNESS_THRESHOLD = 10; // As percentage
-    const int SLEEP_MODE_BRIGHTNESS_THRESHOLD = 190; // As ADC value
-    const int ENTER_SLEEP_MODE_AFTER_DARK_TICKS = Display::FRAME_RATE;
-    const int ENTER_SLEEP_MODE_AFTER_NO_USER_INPUT_SEC = 5;
+    const int BRIGHTNESS_BOOST_AFTER_USER_INPUT_FOR_SEC = 10;
     const int STOP_RINGING_AFTER_SEC = 60 * 5; // Stop ringing after 5 minutes
     const int AUTO_SCROLL_DELAY_SEC = 20;
 }
@@ -374,37 +372,39 @@ bool ClockUi::hourlyChimeActive() const
 
 void ClockUi::adjustBrightness()
 {
-    // Also read the raw ambient light to measure precisely and avoid enabling the sleep mode if the
-    // room is not totally dark.
-    int rawAmbientLight = 0;
-    int ambientLight = m_display.ambientLight(&rawAmbientLight);
+    float ambientLight = m_display.ambientLight();
 
     m_dayLight = ambientLight >= DAY_MODE_BRIGHTNESS_THRESHOLD;
 
-    // The raw ambient light is not stabilized, so count the ticks spent under the threshold. The code
-    // below only regards the room as dark enough for sleep mode after having reached a certain number
-    // of ticks.
-    if (rawAmbientLight <= SLEEP_MODE_BRIGHTNESS_THRESHOLD)
-    {
-        if (m_tickCountInDark < ENTER_SLEEP_MODE_AFTER_DARK_TICKS)
-            m_tickCountInDark++;
-    } else
-        m_tickCountInDark = 0;
-
-    //TRACE << "rawAmbientLight:"<< rawAmbientLight << "m_tickCountInDark:" << m_tickCountInDark;
-
     if (m_settings.get().autoLight)
     {
-        // Since the alarm clock may be used in the bedroom, if darkness is detected and
-        // no buttons have been used for a while, set the brightness to the minimum to avoid
-        // disturbing the user who may want to sleep.
-        if (m_tickCountInDark >= ENTER_SLEEP_MODE_AFTER_DARK_TICKS &&
-            m_secondsWithoutUserInput >= ENTER_SLEEP_MODE_AFTER_NO_USER_INPUT_SEC)
-            m_display.setBrightness(0);
-        else
-            m_display.setBrightness(2 * ambientLight);
+        float BRIGHTNESS_DARK = -100;
+        float BRIGHTNESS_DIM = 50;
+        float BRIGHTNESS_BRIGHT = 100;
+
+        float brightness = 0;
+        if (m_dayLight)
+        {
+            brightness =
+                BRIGHTNESS_DIM + (ambientLight - DAY_MODE_BRIGHTNESS_THRESHOLD) * (BRIGHTNESS_BRIGHT - BRIGHTNESS_DIM) / (100 - DAY_MODE_BRIGHTNESS_THRESHOLD);
+        } else
+        {
+            if (
+                m_secondsWithoutUserInput < BRIGHTNESS_BOOST_AFTER_USER_INPUT_FOR_SEC &&
+                m_currentMenu->at(m_curFuncIdx)->allowsBrightnessBoost())
+            {
+                brightness = BRIGHTNESS_DIM;
+            } else
+            {
+                brightness = 
+                    BRIGHTNESS_DARK + ambientLight * (BRIGHTNESS_DIM - BRIGHTNESS_DARK) / DAY_MODE_BRIGHTNESS_THRESHOLD;
+            }
+        }
+            
+        m_display.setBrightness(brightness);
     } else
     {
+        // TODO: do not continuously set the brightness
         m_display.setBrightness(100);
     }
 }

@@ -56,6 +56,11 @@ public:
     virtual void modifyValue(int valueIndex, Direction direction) {}
     virtual void finishEditing() {}
 
+    virtual bool allowsBrightnessBoost() const
+    {
+        return true;
+    }
+
 protected:
     enum Field
     {

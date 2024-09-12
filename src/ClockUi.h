@@ -44,7 +44,6 @@ private:
     Settings m_settings;
     int m_secondsWithoutUserInput = 0;
     bool m_dayLight = false;
-    int m_tickCountInDark = 0;
     Settings::AlarmMode m_alarmRinging = Settings::AlarmMode::Off;
     int m_ringingForSecs = 0;
 
