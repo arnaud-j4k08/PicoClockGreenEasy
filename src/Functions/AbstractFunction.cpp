@@ -85,12 +85,10 @@ int AbstractFunction::editedValueIndex() const
     return m_clockUi->m_editedValueIndex;
 }
 
+// TODO: shorten this method
 void AbstractFunction::adjustField(Field field, Direction dir)
 {
     int *value = nullptr;
-    int modulo = 0;
-    int bigStepSize = 0;
-    int floor = 0;
     tm tm = clock().get();
     bool tmTouched = false;
     switch(field)
@@ -139,7 +137,22 @@ void AbstractFunction::adjustField(Field field, Direction dir)
         case CountdownStartSecond:
             value = &modifySettings().countdownStartSec;
             break;
+        case ManualBrightness:
+            value = &modifySettings().manualBrightness;
+            break;
+        case BrightnessDark:
+            value = &modifySettings().brightnessDark;
+            break;
+        case BrightnessDim:
+            value = &modifySettings().brightnessDim;
+            break;
+        case BrightnessBright:
+            value = &modifySettings().brightnessBright;
+            break;
     }
+    int modulo = 0;
+    int bigStepSize = 0;
+    int floor = 0;
     switch(field)
     {
         case Year:
@@ -168,6 +181,17 @@ void AbstractFunction::adjustField(Field field, Direction dir)
         case CountdownStartMinute:
         case CountdownStartSecond:
             modulo = 60;
+            bigStepSize = 10;
+            break;
+        case ManualBrightness:
+            modulo = 101;
+            bigStepSize = 10;
+            break;
+        case BrightnessDark:
+        case BrightnessDim:
+        case BrightnessBright:
+            floor = -100;
+            modulo = 201;
             bigStepSize = 10;
             break;
     }

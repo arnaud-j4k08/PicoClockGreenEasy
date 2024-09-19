@@ -47,6 +47,10 @@ public:
         bool skipNextAlarm = false;
         int countdownStartMin = 1;
         int countdownStartSec = 0;
+        int manualBrightness = 100;
+        int brightnessDark = -20;
+        int brightnessDim = 55;
+        int brightnessBright = 100;
     };
 
     Settings();

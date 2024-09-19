@@ -21,6 +21,14 @@ static ProportionalCharacter narrowFontChars[] =
                 0b0,
                 0b0 } },
 
+    {'%', 3, {  0b101,
+                0b001,
+                0b010,
+                0b010,
+                0b010,
+                0b100,
+                0b101 }},
+
     {'(', 2, {  0b01,
                 0b10,
                 0b10,
@@ -36,6 +44,14 @@ static ProportionalCharacter narrowFontChars[] =
                 0b01,
                 0b01,
                 0b10 } },
+
+    {'-', 2, {  0b00,
+                0b00,
+                0b00,
+                0b11,
+                0b00,
+                0b00,
+                0b00 } },
 
     {'0', 3, {  0b010,
                 0b101,

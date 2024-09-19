@@ -18,13 +18,26 @@ private:
         EditingFormat,
         EditingHourlyChime,
         EditingAutoLight,
+
+        // Value to edit if auto light is disabled
+        EditingManualBrightness,
+        
+        // Values to edit if auto light is enabled
+        EditingBrightnessDark = EditingManualBrightness, 
+        EditingBrightnessDim,
+        EditingBrightnessBright,
+
         ValueCount
     };
 
     void renderFrame(Bitmap &frame, int editedValueIndex, int blinkingCounter, bool fullRefresh) override;
-    int valueCount() const override
-    {
-        return ValueCount;
-    }
+    int valueCount() const override;
     void modifyValue(int valueIndex, Direction direction) override;
+
+    bool allowsBrightnessBoost(int valueIndex) const override
+    {
+        // Disable "brightness boost" when setting "brightness dark" so that the user can see the 
+        // brightness that results from the setting
+        return valueIndex != EditingBrightnessDark;
+    }
 };

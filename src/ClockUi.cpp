@@ -24,8 +24,8 @@
 namespace
 {
     const int BUTTON_REPEAT_DELAY = 500;
-    const int DAY_MODE_BRIGHTNESS_THRESHOLD = 10; // As percentage
-    const int BRIGHTNESS_BOOST_AFTER_USER_INPUT_FOR_SEC = 10;
+    const int DIM_AMBIENT_LIGHT = 10; // As percentage
+    const int BRIGHTNESS_BOOST_AFTER_USER_INPUT_FOR_SEC = 5;
     const int STOP_RINGING_AFTER_SEC = 60 * 5; // Stop ringing after 5 minutes
     const int AUTO_SCROLL_DELAY_SEC = 20;
 }
@@ -374,30 +374,29 @@ void ClockUi::adjustBrightness()
 {
     float ambientLight = m_display.ambientLight();
 
-    m_dayLight = ambientLight >= DAY_MODE_BRIGHTNESS_THRESHOLD;
+    m_dayLight = ambientLight >= DIM_AMBIENT_LIGHT;
 
     if (m_settings.get().autoLight)
     {
-        float BRIGHTNESS_DARK = -100;
-        float BRIGHTNESS_DIM = 50;
-        float BRIGHTNESS_BRIGHT = 100;
-
         float brightness = 0;
         if (m_dayLight)
         {
+            // Interpolate between "brightness dim" and "brightness bright"
             brightness =
-                BRIGHTNESS_DIM + (ambientLight - DAY_MODE_BRIGHTNESS_THRESHOLD) * (BRIGHTNESS_BRIGHT - BRIGHTNESS_DIM) / (100 - DAY_MODE_BRIGHTNESS_THRESHOLD);
+                m_settings.get().brightnessDim + (ambientLight - DIM_AMBIENT_LIGHT) * (m_settings.get().brightnessBright - m_settings.get().brightnessDim) / (100 - DIM_AMBIENT_LIGHT);
         } else
         {
             if (
                 m_secondsWithoutUserInput < BRIGHTNESS_BOOST_AFTER_USER_INPUT_FOR_SEC &&
-                m_currentMenu->at(m_curFuncIdx)->allowsBrightnessBoost())
+                m_currentMenu->at(m_curFuncIdx)->allowsBrightnessBoost(m_editedValueIndex))
             {
-                brightness = BRIGHTNESS_DIM;
+                // Temporarily use "brightness dim" after user input
+                brightness = m_settings.get().brightnessDim;
             } else
             {
+                // Interpolate between "brightness dark" and "brightness dim"
                 brightness = 
-                    BRIGHTNESS_DARK + ambientLight * (BRIGHTNESS_DIM - BRIGHTNESS_DARK) / DAY_MODE_BRIGHTNESS_THRESHOLD;
+                    m_settings.get().brightnessDark + ambientLight * (m_settings.get().brightnessDim - m_settings.get().brightnessDark) / DIM_AMBIENT_LIGHT;
             }
         }
             
@@ -405,7 +404,7 @@ void ClockUi::adjustBrightness()
     } else
     {
         // TODO: do not continuously set the brightness
-        m_display.setBrightness(100);
+        m_display.setBrightness(m_settings.get().manualBrightness);
     }
 }
 

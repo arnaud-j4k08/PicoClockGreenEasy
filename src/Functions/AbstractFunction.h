@@ -56,7 +56,7 @@ public:
     virtual void modifyValue(int valueIndex, Direction direction) {}
     virtual void finishEditing() {}
 
-    virtual bool allowsBrightnessBoost() const
+    virtual bool allowsBrightnessBoost(int valueIndex) const
     {
         return true;
     }
@@ -74,7 +74,11 @@ protected:
         Alarm2Hour,
         Alarm2Minute,
         CountdownStartMinute,
-        CountdownStartSecond
+        CountdownStartSecond,
+        ManualBrightness,
+        BrightnessDark,
+        BrightnessDim,
+        BrightnessBright,
     };
 
     // Method to access ClockUi

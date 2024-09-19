@@ -13,7 +13,7 @@ An easy-to-use firmware for the Waveshare Pico-Clock-Green, written in C++
     - countdown
     - stopwatch
     - hourly chime
-    - auto light
+    - auto light, to automatically adjust the brightness of the leds depending on the ambient light
 - additional:
     - menu based user interface with horizontal and vertical scrolling
     - instant start up: no splash screen or animation, just power the device and you have a clock
@@ -21,7 +21,10 @@ An easy-to-use firmware for the Waveshare Pico-Clock-Green, written in C++
     - NTP synchronization over Wi-Fi (requires a development environment to set the SSID and password)
     - persistent saving of clock settings to flash memory
     - optional hourly chime activation using the ambient light sensor
-    - sleep mode: when auto light is enabled, this makes the display very dim if the room is dark and no button has been used for a while
+    - configurable brightness: 
+      - if auto light is disabled, the brightness can be set as a percentage
+      - if auto light is enabled, the brightness can be defined at three ambient light points between which the firmware will interpolate: dark (no ambient light), dim (10% ambient light), bright (maximum ambient light)
+    - brightness boost: if auto light is enabled and the ambient light is below 10%, the brightness is temporarily increased to the dim setting during 5 seconds after a user input
     - next alarm: displays next time and weekday when an alarm will ring, so that the user can quickly check if the alarm was set correctly before sleeping
     - skip next alarm: e.g. if you woke up before the alarm time or the next day is a national holiday, activate this function and the next alarm (and only this one) will be skipped. This is shown by the slow blinking of the "Alarm On" indicator.
     - gradual alarm mode that progressively increases the duration of beeps to wake up gently
@@ -117,7 +120,9 @@ This is the full definition of the menu structure. Use the "enter/set" button to
     - reset: reset stopwatch to zero
     - exit: leave submenu
 - wifi status (no actual function)
-- options &rarr; set auto scroll &rarr; set time format &rarr; set hourly chime &rarr; set auto light
+- options &rarr; set auto scroll &rarr; set time format &rarr; set hourly chime &rarr; set auto light -> set brightness (if auto light is off)
+  options &rarr; set auto scroll &rarr; set time format &rarr; set hourly chime &rarr; set auto light -> set brightness dark -> set brightness dim -> set brightness bright (if auto light is on)
+
 
 ## Using NTP synchronization
 
@@ -126,3 +131,30 @@ If you have a Pico W, you can use NTP to synchronize date/time at start-up. For 
 This configuration is done by setting the WIFI_SSID and WIFI_PASSWORD macros in the UserConfig.cmake file (between the escaped quotes). Additionally, the UTC offset also needs to be set in UTC_OFFSET, as the NTP server provides UTC time and does not know where you are located. After configuring, follow the steps of the "Building from the source code" section above. 
 
 When running the firmware, move to the "wifi status" function to check if your settings are working.
+
+
+## Setting brightness
+
+### Manual setting
+
+- scroll to the "Options" function
+- press "set" several times to reach the "auto light" setting
+- press "up" or "down" to set "auto light" to "off"
+- press "set"
+- use "up" or "down" to the set the brightness percentage
+- press "set"
+
+### Automatic setting
+
+With auto light, the brightness is automatically adjusted depending on the ambient light. The mapping from ambient light to brightness can be set at three points to fit to all usage conditions.
+
+- scroll to the "Options" function
+- press "set" several times to reach the "auto light" setting
+- press "up" or "down" to set "auto light" to "on"
+- press "set" (for this setting, the "brightness boost" is temporarily disabled)
+- go to a completely dark room and use the "up" or "down" buttons to set the "brightness dark" percentage (to make the display very dark for sleeping, this value can also be negative, but the display will never be completely turned off, as a brightness of 0% or less results in a effective brightness of 0.1%)
+- press "set"
+- go to a not-so-dark room (or turn on the light) and use the "up" or "down" buttons to set the "brightness dim" percentage
+- press "set"
+- if you need to adjust the brightness in a daylight conditions, you can use the "up" or "down" buttons to set the "brightness bright" percentage
+- press "set"
