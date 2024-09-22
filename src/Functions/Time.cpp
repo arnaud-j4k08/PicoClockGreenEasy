@@ -194,14 +194,24 @@ int Time::putAmPmAndConvertCurrentHour(Bitmap &frame)
 
 void Time::modifyValue(int valueIndex, Direction direction)
 {
+    tm tm = clock().get();
+
     switch(valueIndex)
     {
         case EditingHour:
-            adjustField(Hour, direction);
+            adjustField(direction, Hour, tm.tm_hour);
             break;
 
         case EditingMinute:
-            adjustField(Minute, direction);
+            adjustField(direction, Minute, tm.tm_min);
+
+            // Changing minutes also resets seconds and ticks to 0. This way, the user can 
+            // synchronize precisely with another clock.
+            tm.tm_sec = 0;
+            clock().resetTicks();
             break;
     }
+
+    // Save time in the program clock. RTC sync will be triggered when leaving edit mode.
+    clock().set(tm);
 }

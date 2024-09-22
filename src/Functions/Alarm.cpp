@@ -149,11 +149,13 @@ void Alarm::modifyValue(int valueIndex, Direction direction)
         break;
 
     case EditingAlarmHour:
-        adjustField(m_alarmId == Alarm1 ? Alarm1Hour : Alarm2Hour, direction);
+        adjustField(
+            direction, Hour, m_alarmId == Alarm1 ? modifySettings().alarm1.hour : modifySettings().alarm2.hour);
         break;
 
     case EditingAlarmMinute:
-        adjustField(m_alarmId == Alarm1 ? Alarm1Minute : Alarm2Minute, direction);
+        adjustField(
+            direction, Minute, m_alarmId == Alarm1 ? modifySettings().alarm1.min : modifySettings().alarm2.min);
         break;
     
     case EditingAlarmWeekDays:

@@ -2,6 +2,31 @@
 #include "Bitmap.h"
 #include "Clock.h"
 
+namespace 
+{
+    int daysInMonth(tm dt)
+    {
+        // Go to next month
+        dt.tm_mon++;
+
+        // Go to next year if reached
+        if (dt.tm_mon >= 12)
+        {
+            dt.tm_mon = 0;
+            dt.tm_year++;
+        }
+
+        // Set month day to 0, which is equivalent to the last day of the previous month
+        dt.tm_mday = 0;
+
+        // Call mktime to make a valid date
+        mktime(&dt);
+
+        // Now we have the number of days of the given month and can return it
+        return dt.tm_mday;
+    }
+}
+
 void Date::renderFrame(Bitmap &frame, int editedValueIndex, int blinkingCounter, bool fullRefresh)
 {
     if (fullRefresh || 
@@ -48,20 +73,25 @@ void Date::startEditingValue(int valueIndex)
 
 void Date::modifyValue(int valueIndex, Direction direction)
 {
+    tm tm = clock().get();
+
     switch (valueIndex)
     {
         case EditingYear:
-            adjustField(Year, direction);
+            adjustField(direction, Year, tm.tm_year);
             break;
 
         case EditingMonth:
-            adjustField(Month, direction);
+            adjustField(direction, Month, tm.tm_mon);
             break;
 
         case EditingDay:
-            adjustField(Day, direction);
+            adjustField(direction, Day, tm.tm_mday, daysInMonth(tm));
             break;
     }
+
+    // Save time in the program clock. RTC sync will be triggered when leaving edit mode.
+    clock().set(tm);
 }
 
 void Date::finishEditing()

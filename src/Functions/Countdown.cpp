@@ -134,11 +134,11 @@ void Countdown::modifyValue(int valueIndex, Direction direction)
     switch(valueIndex)
     {
         case EditingMin:
-            adjustField(CountdownStartMinute, direction);
+            adjustField(direction, Minute, modifySettings().countdownStartMin);
             break;
 
         case EditingSec:
-            adjustField(CountdownStartSecond, direction);
+            adjustField(direction, Second, modifySettings().countdownStartSec);
             break;
     }
 

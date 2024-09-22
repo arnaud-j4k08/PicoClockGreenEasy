@@ -62,23 +62,16 @@ public:
     }
 
 protected:
-    enum Field
+    enum FieldBehaviour
     {
         Year,
         Month,
         Day,
         Hour,
         Minute,
-        Alarm1Hour,
-        Alarm1Minute,
-        Alarm2Hour,
-        Alarm2Minute,
-        CountdownStartMinute,
-        CountdownStartSecond,
+        Second,
         ManualBrightness,
-        BrightnessDark,
-        BrightnessDim,
-        BrightnessBright,
+        AutoBrightnessPoint,
     };
 
     // Method to access ClockUi
@@ -89,7 +82,8 @@ protected:
     void convertHour(int hour24, int &displayedHour, bool &morning) const;
     void editValues();
     int editedValueIndex() const;
-    void adjustField(Field f, Direction d);
+    // If behaviour==Day, daysInMonth must be provided
+    void adjustField(Direction dir, FieldBehaviour behaviour, int &value, int dayInMonth = 0);
     template <typename Enum>
     void adjustEnum(Enum &value, AbstractFunction::Direction dir);
     void putAmPmIndicators(Bitmap &frame, bool morning);

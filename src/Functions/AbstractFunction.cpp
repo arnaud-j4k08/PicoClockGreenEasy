@@ -5,31 +5,6 @@
 
 #include <ctime>
 
-namespace 
-{
-    int daysInMonth(tm dt)
-    {
-        // Go to next month
-        dt.tm_mon++;
-
-        // Go to next year if reached
-        if (dt.tm_mon >= 12)
-        {
-            dt.tm_mon = 0;
-            dt.tm_year++;
-        }
-
-        // Set month day to 0, which is equivalent to the last day of the previous month
-        dt.tm_mday = 0;
-
-        // Call mktime to make a valid date
-        mktime(&dt);
-
-        // Now we have the number of days of the given month and can return it
-        return dt.tm_mday;
-    }
-}
-
 const Settings::Values &AbstractFunction::settings() const
 {
     return m_clockUi->m_settings.get();
@@ -85,75 +60,13 @@ int AbstractFunction::editedValueIndex() const
     return m_clockUi->m_editedValueIndex;
 }
 
-// TODO: shorten this method
-void AbstractFunction::adjustField(Field field, Direction dir)
+void AbstractFunction::adjustField(
+    Direction dir, FieldBehaviour behaviour, int &value, int daysInMonth)
 {
-    int *value = nullptr;
-    tm tm = clock().get();
-    bool tmTouched = false;
-    switch(field)
-    {
-        case Year:
-            value = &tm.tm_year;
-            tmTouched = true;
-            break;
-        case Month:
-            value = &tm.tm_mon;
-            tmTouched = true;
-            break;
-        case Day:
-            value = &tm.tm_mday;
-            tmTouched = true;
-            break;
-        case Hour:
-            value = &tm.tm_hour;
-            tmTouched = true;
-            break;
-        case Minute:
-            value = &tm.tm_min;
-            tmTouched = true;
-
-            // Changing minutes also resets seconds and ticks to 0. This way, the user can synchronize precisely
-            // with another clock.
-            tm.tm_sec = 0;
-            clock().resetTicks();
-
-            break;
-        case Alarm1Hour:
-            value = &modifySettings().alarm1.hour;
-            break;
-        case Alarm1Minute:
-            value = &modifySettings().alarm1.min;
-            break;
-        case Alarm2Hour:
-            value = &modifySettings().alarm2.hour;
-            break;
-        case Alarm2Minute:
-            value = &modifySettings().alarm2.min;
-            break;
-        case CountdownStartMinute:
-            value = &modifySettings().countdownStartMin;
-            break;
-        case CountdownStartSecond:
-            value = &modifySettings().countdownStartSec;
-            break;
-        case ManualBrightness:
-            value = &modifySettings().manualBrightness;
-            break;
-        case BrightnessDark:
-            value = &modifySettings().brightnessDark;
-            break;
-        case BrightnessDim:
-            value = &modifySettings().brightnessDim;
-            break;
-        case BrightnessBright:
-            value = &modifySettings().brightnessBright;
-            break;
-    }
-    int modulo = 0;
     int bigStepSize = 0;
     int floor = 0;
-    switch(field)
+    int modulo = 0;
+    switch(behaviour)
     {
         case Year:
             modulo = 200;
@@ -165,21 +78,16 @@ void AbstractFunction::adjustField(Field field, Direction dir)
             bigStepSize = 3;
             break;
         case Day:
-            modulo = daysInMonth(tm);
+            modulo = daysInMonth;
             floor = 1;
             bigStepSize = 7;
             break;
         case Hour:
-        case Alarm1Hour:
-        case Alarm2Hour:
             modulo = 24;
             bigStepSize = 6;
             break;
         case Minute:
-        case Alarm1Minute:
-        case Alarm2Minute:
-        case CountdownStartMinute:
-        case CountdownStartSecond:
+        case Second:
             modulo = 60;
             bigStepSize = 10;
             break;
@@ -187,42 +95,34 @@ void AbstractFunction::adjustField(Field field, Direction dir)
             modulo = 101;
             bigStepSize = 10;
             break;
-        case BrightnessDark:
-        case BrightnessDim:
-        case BrightnessBright:
+        case AutoBrightnessPoint:
             floor = -100;
             modulo = 201;
             bigStepSize = 10;
             break;
     }
 
-    TRACE << "Previous value:" << *value;
-    *value -= floor;
+    TRACE << "Previous value:" << value;
+    value -= floor;
     switch (dir)
     {
         case Up:
-            *value = (*value + 1) % modulo;
+            value = (value + 1) % modulo;
             break;
         case Down:
-            *value = (*value + modulo - 1) % modulo;
+            value = (value + modulo - 1) % modulo;
             break;
         case RepeatedUp:
             // Round to the big step multiple or move up to the next one
-            *value = ((*value + bigStepSize) % modulo) / bigStepSize * bigStepSize;
+            value = ((value + bigStepSize) % modulo) / bigStepSize * bigStepSize;
             break;
         case RepeatedDown:
             // Round to the big step multiple or move down to the next one
-            *value = ((*value + modulo - 1) % modulo) / bigStepSize * bigStepSize;
+            value = ((value + modulo - 1) % modulo) / bigStepSize * bigStepSize;
             break;
     }
-    *value += floor;
-    TRACE << "New value: " << *value;
-
-    if (tmTouched)
-    {
-        // Save time in the program clock. RTC sync will be triggered when leaving edit mode.
-        clock().set(tm);
-    }
+    value += floor;
+    TRACE << "New value: " << value;
 }
 
 void AbstractFunction::setBlinkingCounter(int counter)
