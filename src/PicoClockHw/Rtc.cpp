@@ -83,7 +83,7 @@ bool Rtc::read(tm &dateTime) const
     dateTime.tm_hour = fromBcd(buffer[2], 0, 23);
     dateTime.tm_wday = fromBcd(buffer[3], 1, 7) - 1; // Unlike in the DS3231, tm::tm_wday is 0-based
     dateTime.tm_mday = fromBcd(buffer[4], 1, 31);
-    dateTime.tm_mon = fromBcd(buffer[5] & 0xF, 1, 12) - 1; // Unlike in the DS3231, tm::tm_mon is 0-based.
+    dateTime.tm_mon = fromBcd(buffer[5] & 0x1F, 1, 12) - 1; // Unlike in the DS3231, tm::tm_mon is 0-based.
     dateTime.tm_year = fromBcd(buffer[6], 0, 99) + 100;    // tm::tm_year is "years since 1900"
 
     if (buffer[5] & 0x80)
