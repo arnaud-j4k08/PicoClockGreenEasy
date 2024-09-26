@@ -16,6 +16,7 @@ set(DISPLAY_PIO "1") # Enable use of DMA and PIO for the display
 add_executable( ${PROJECT_NAME}
                 src/Bitmap.cpp
                 src/Clock.cpp
+                src/DaylightSavingTime.cpp
                 src/ClockUi.cpp
                 src/main.cpp
                 src/fonts.cpp

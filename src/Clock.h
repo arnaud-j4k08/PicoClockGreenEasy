@@ -1,5 +1,6 @@
 #pragma once
 
+#include "DaylightSavingTime.h"
 #include "PicoClockHw/Rtc.h"
 #include "PicoClockHw/Ntp.h"
 #include "Settings.h"
@@ -79,6 +80,8 @@ private:
     bool nextAlarmAfter(
         int startWeekday, const Time &startTime, int &weekday, Clock::Time &time) const;
     Time alarmTimeAtDay(AlarmId alarmId, int weekday) const;
+    void setTmFromTime();
+    void setFromNonDstConsideringTm(tm tm); 
 
     enum RtcSync
     {
@@ -93,11 +96,12 @@ private:
     RtcSync m_rtcSync = SyncingFromRtc;
     int m_lastRtcSec;
     Settings::Alarm m_alarm[AlarmCount];
+
+    DaylightSavingTime m_dst;
     
-    // Local time (with or without DST, as this change has to be done manually by the user 
-    // for the moment)
-    time_t m_time = 0; // As unix time (but local, not UTC)
-    tm m_tm = {}; // As tm from which human readable elements can be extracted
+    time_t m_time = 0; // Current time as unix time, local (not UTC), not considering DST
+    tm m_tm = {}; // Current time as tm, considering DST
+    bool m_dstActive = false;
 
     bool m_clockAdjusted = true;
 };

@@ -9,7 +9,7 @@ Clock::Clock(int tickPerSec) :
     tm rtcTime;
     if (m_rtc->read(rtcTime))
     {
-        set(rtcTime);
+        setFromNonDstConsideringTm(rtcTime);
         m_rtcSync = SyncingFromRtc;
 
         TRACE << "Set m_lastRtcSec to be able to detect when the second changes in the RTC";
@@ -43,7 +43,7 @@ void Clock::onNtpTimeReceived(time_t utcTime, uint32_t ms)
 {
     TRACE << "Received ntp time:" << utcTime <<", setting it";
     m_time = utcTime + UTC_OFFSET * 60 * 60;
-    m_tm = *localtime(&m_time);
+    setTmFromTime();
     m_tickCount = ms * m_tickCount.wrapValue() / 1000;
     m_clockAdjusted = true;
 
@@ -68,10 +68,7 @@ void Clock::tick(bool &clockAdjusted, AlarmId &reachedAlarm, Settings &settings)
             {
                 TRACE << "done";
                 // The second just changed in the RTC, synchronize.
-                // Note: the mktime function used by the set method is quite slow and would cause a 
-                // glitch in the display if it was called on every frame. Therefore it is only 
-                // called at the end of the sync here.
-                set(rtcTime);
+                setFromNonDstConsideringTm(rtcTime);
                 m_tickCount = 0;
                 m_rtcSync = SyncDone;
             }
@@ -86,12 +83,18 @@ void Clock::tick(bool &clockAdjusted, AlarmId &reachedAlarm, Settings &settings)
         if (m_tickCount == 0)
         {
             m_time++;
-            m_tm = *localtime(&m_time);
+            setTmFromTime();
 
             if (m_rtc && m_rtcSync == SyncingToRtc)
             {
                 TRACE << "Set RTC";
-                if (m_rtc->write(m_tm))
+
+                // To avoid ambiguity, save the time without DST consideration into the RTC. Thus,
+                // on the next start, m_dst will be able to determine if DST is active only by 
+                // looking at the time and date.
+                tm tm = *localtime(&m_time);
+
+                if (m_rtc->write(tm))
                     m_rtcSync = SyncDone;
             }
         }
@@ -120,10 +123,32 @@ void Clock::tick(bool &clockAdjusted, AlarmId &reachedAlarm, Settings &settings)
     } 
 }
 
+void Clock::setTmFromTime()
+{
+    time_t timeConsideringDst = 0;
+    m_dst.considerDst(m_time, timeConsideringDst, m_dstActive);
+    m_tm = *localtime(&timeConsideringDst);
+}
+
 void Clock::set(const tm &tm)
 {
     m_tm = tm;
     m_time = mktime(&m_tm);
+
+    // If DST is active, unapply it so that the time stays as it was set by the user, as the DST 
+    // offset will be readded each time setTmFromTime() is called.
+    if (m_dstActive)
+        m_dst.unapplyDst(m_time);
+
+    m_clockAdjusted = true;
+}
+
+// tm is passed by copy so that it can be passed to mktime
+void Clock::setFromNonDstConsideringTm(tm tm)
+{
+    m_time = mktime(&tm);
+    setTmFromTime();
+
     m_clockAdjusted = true;
 }
 

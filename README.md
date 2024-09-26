@@ -1,7 +1,7 @@
 ![image](Clock.jpeg)
 
 # Pico Clock Green & Easy
-An easy-to-use firmware for the Waveshare Pico-Clock-Green, written in C++
+This project is an easy-to-use firmware for the Waveshare Pico-Clock-Green written in C++. See also the [Introduction video on Youtube](https://youtu.be/PO-PY_PxIrI). For any question, feel free to post in the [Discussion section](https://github.com/arnaud-j4k08/PicoClockGreenEasy/discussions).
 
 # Features
 ## User features
@@ -19,15 +19,17 @@ An easy-to-use firmware for the Waveshare Pico-Clock-Green, written in C++
     - instant start up: no splash screen or animation, just power the device and you have a clock
     - 3 time display styles: hour:min:sec, hour:min + bar (the bar is a kind of horizontal hourglass to show seconds), hour:min
     - NTP synchronization over Wi-Fi (requires a development environment to set the SSID and password)
+    - automatic daylight saving time observation (currently only for European Union)
     - persistent saving of clock settings to flash memory
     - optional hourly chime activation using the ambient light sensor
     - configurable brightness: 
       - if auto light is disabled, the brightness can be set as a percentage
       - if auto light is enabled, the brightness can be defined at three ambient light points between which the firmware will interpolate: dark (no ambient light), dim (10% ambient light), bright (maximum ambient light)
     - brightness boost: if auto light is enabled and the ambient light is below 10%, the brightness is temporarily increased to the dim setting during 5 seconds after a user input
+- alarms:
     - next alarm: displays next time and weekday when an alarm will ring, so that the user can quickly check if the alarm was set correctly before sleeping
     - skip next alarm: e.g. if you woke up before the alarm time or the next day is a national holiday, activate this function and the next alarm (and only this one) will be skipped. This is shown by the slow blinking of the "Alarm On" indicator.
-    - gradual alarm mode that progressively increases the duration of beeps to wake up gently
+    - gradual alarm mode that progressively increases the duration of beeps to wake up the user gently
 
 ## Technical features
 - support for Pico and Pico W
@@ -131,6 +133,13 @@ If you have a Pico W, you can use NTP to synchronize date/time at start-up. For 
 This configuration is done by setting the WIFI_SSID and WIFI_PASSWORD macros in the UserConfig.cmake file (between the escaped quotes). Additionally, the UTC offset also needs to be set in UTC_OFFSET, as the NTP server provides UTC time and does not know where you are located. After configuring, follow the steps of the "Building from the source code" section above. 
 
 When running the firmware, move to the "wifi status" function to check if your settings are working.
+
+
+## Configuring daylight saving time
+
+The clock can be configured to automatically observe daylight saving time. For the moment, this requires a build environment, as the UTC offset and location need to be configured at build time. Also, only the European Union variant of daylight saving time is supported.
+
+The configuration is done by setting the UTC_OFFSET and DST_LOCATION macros in the UserConfig.cmake file. After configuring, follow the steps of the "Building from the source code" section above. At runtime, the clock will then automatically advance when daylight saving time begins and change back to regular time when it ends.
 
 
 ## Setting brightness
