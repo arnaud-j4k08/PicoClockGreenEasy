@@ -83,7 +83,9 @@ void Alarm::renderFrame(
             break;
     }
     
-    if (alarm.mode != Settings::AlarmMode::Off)
+    if (alarm.mode == Settings::AlarmMode::Off)
+        frame.putWeekDays(0);
+    else
         frame.putWeekDays(alarm.weekDayBits);
     
     if (editedValueIndex == EditingAlarmWeekDays)
