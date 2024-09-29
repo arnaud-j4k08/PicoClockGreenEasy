@@ -9,6 +9,13 @@ Wifi::Status Wifi::m_connectResult = Wifi::Unknown;
 
 bool Wifi::init()
 {
+    // Do not initialize the Wi-Fi if no SSID is configured.
+    if (strlen(WIFI_SSID) == 0)
+    {
+        m_connectResult = NotAvailable;
+        return false;
+    }
+
     TRACE << "cyw43_arch_init";
     if (cyw43_arch_init() != 0) 
     {
@@ -28,13 +35,6 @@ void Wifi::deinit()
 
 bool Wifi::connectBlocking()
 {
-    // Do not bother connecting if no SSID is configured.
-    if (strlen(WIFI_SSID) == 0)
-    {
-        m_connectResult = NotAvailable;
-        return false;
-    }
-
     TRACE << "cyw43_arch_wifi_connect_timeout_ms";
     int res =  
         cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000);

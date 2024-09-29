@@ -20,13 +20,9 @@ int main()
     TRACE << "Clock UI";
     ClockUi ui;
 
-    TRACE << "Wifi::init";
-    Wifi::init();
-
-    TRACE << "Connect to wifi\n";
-
-    if (Wifi::connectBlocking())
-        ui.startNtpRequest();
+    if (Wifi::init())
+        if (Wifi::connectBlocking())
+            ui.startNtpRequest();
 
     TRACE <<"Start the loop\n";
     Platform::runMainLoop();
