@@ -25,7 +25,7 @@ This project is an easy-to-use firmware for the Waveshare Pico-Clock-Green writt
     - configurable brightness: 
       - if auto light is disabled, the brightness can be set as a percentage
       - if auto light is enabled, the brightness can be defined at three ambient light points between which the firmware will interpolate: dark (no ambient light), dim (10% ambient light), bright (maximum ambient light)
-    - brightness boost: if auto light is enabled and the ambient light is below 10%, the brightness is temporarily increased to the dim setting during 5 seconds after a user input
+    - brightness boost: if auto light is enabled and the ambient light is below 10%, the brightness is temporarily increased by 20% during 5 seconds after a user input, so that the display is more readable when setting something during the night
 - alarms:
     - next alarm: displays next time and weekday when an alarm will ring, so that the user can quickly check if the alarm was set correctly before sleeping
     - skip next alarm: e.g. if you woke up before the alarm time or the next day is a national holiday, activate this function and the next alarm (and only this one) will be skipped. This is shown by the slow blinking of the "Alarm On" indicator.
@@ -160,7 +160,7 @@ With auto light, the brightness is automatically adjusted depending on the ambie
 - scroll to the "Options" function
 - press "set" several times to reach the "auto light" setting
 - press "up" or "down" to set "auto light" to "on"
-- press "set" (for this setting, the "brightness boost" is temporarily disabled)
+- press "set" (for brightness settings, the "brightness boost" is temporarily disabled)
 - go to a completely dark room and use the "up" or "down" buttons to set the "brightness dark" percentage (to make the display very dark for sleeping, this value can also be negative, but the display will never be completely turned off, as a brightness of 0% or less results in a effective brightness of 0.1%)
 - press "set"
 - go to a not-so-dark room (or turn on the light) and use the "up" or "down" buttons to set the "brightness dim" percentage

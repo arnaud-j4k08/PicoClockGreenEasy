@@ -26,6 +26,7 @@ namespace
     const int BUTTON_REPEAT_DELAY = 500;
     const int DIM_AMBIENT_LIGHT = 10; // As percentage
     const int BRIGHTNESS_BOOST_AFTER_USER_INPUT_FOR_SEC = 5;
+    const float BRIGHTNESS_BOOST_PERCENT = 20;
     const int STOP_RINGING_AFTER_SEC = 60 * 5; // Stop ringing after 5 minutes
     const int AUTO_SCROLL_DELAY_SEC = 20;
 }
@@ -386,17 +387,17 @@ void ClockUi::adjustBrightness()
                 m_settings.get().brightnessDim + (ambientLight - DIM_AMBIENT_LIGHT) * (m_settings.get().brightnessBright - m_settings.get().brightnessDim) / (100 - DIM_AMBIENT_LIGHT);
         } else
         {
+            // Interpolate between "brightness dark" and "brightness dim"
+            brightness = 
+                m_settings.get().brightnessDark + ambientLight * (m_settings.get().brightnessDim - m_settings.get().brightnessDark) / DIM_AMBIENT_LIGHT;
+
             if (
                 m_secondsWithoutUserInput < BRIGHTNESS_BOOST_AFTER_USER_INPUT_FOR_SEC &&
                 m_currentMenu->at(m_curFuncIdx)->allowsBrightnessBoost(m_editedValueIndex))
             {
-                // Temporarily use "brightness dim" after user input
-                brightness = m_settings.get().brightnessDim;
-            } else
-            {
-                // Interpolate between "brightness dark" and "brightness dim"
+                // Temporarily increase brightness after user input
                 brightness = 
-                    m_settings.get().brightnessDark + ambientLight * (m_settings.get().brightnessDim - m_settings.get().brightnessDark) / DIM_AMBIENT_LIGHT;
+                    std::min(brightness + BRIGHTNESS_BOOST_PERCENT, static_cast<float>(m_settings.get().brightnessDim));
             }
         }
             

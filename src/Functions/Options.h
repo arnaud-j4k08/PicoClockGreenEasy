@@ -36,8 +36,11 @@ private:
 
     bool allowsBrightnessBoost(int valueIndex) const override
     {
-        // Disable "brightness boost" when setting "brightness dark" so that the user can see the 
-        // brightness that results from the setting
-        return valueIndex != EditingBrightnessDark;
+        // Disable "brightness boost" when setting brightness so that the user can see the actual 
+        // brightness that results from the setting.
+        return 
+            valueIndex != EditingBrightnessDark && 
+            valueIndex != EditingBrightnessDim && 
+            valueIndex != EditingBrightnessBright;
     }
 };
