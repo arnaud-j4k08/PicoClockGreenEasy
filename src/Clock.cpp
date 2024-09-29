@@ -125,20 +125,19 @@ void Clock::tick(bool &clockAdjusted, AlarmId &reachedAlarm, Settings &settings)
 
 void Clock::setTmFromTime()
 {
-    time_t timeConsideringDst = 0;
-    m_dst.considerDst(m_time, timeConsideringDst, m_dstActive);
+    time_t timeConsideringDst = m_dst.considerDst(m_time);
     m_tm = *localtime(&timeConsideringDst);
+    TRACE << "It is" << m_tm;
 }
 
 void Clock::set(const tm &tm)
 {
+    TRACE << "Set clock to" << tm;
     m_tm = tm;
-    m_time = mktime(&m_tm);
 
     // If DST is active, unapply it so that the time stays as it was set by the user, as the DST 
     // offset will be readded each time setTmFromTime() is called.
-    if (m_dstActive)
-        m_dst.unapplyDst(m_time);
+    m_time = m_dst.unconsiderDst(mktime(&m_tm));
 
     m_clockAdjusted = true;
 }

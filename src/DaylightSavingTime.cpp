@@ -2,19 +2,35 @@
 #include "Clock.h"
 #include "Utils/Trace.h"
 
-void DaylightSavingTime::considerDst(time_t time, time_t &timeConsideringDst, bool &dstActive)
+time_t DaylightSavingTime::considerDst(time_t time)
 {
-    dstActive = isDstActive(time);
-    if (dstActive)
-        timeConsideringDst = time + 3600;
-    else
-        timeConsideringDst = time;
+    // Remember if DST is active, as we may need this information in unapplyDst
+    m_wasDstActive = isDstActive(time);
+    if (m_wasDstActive)
+    {
+        TRACE << "DST applied";
+        return time + 3600;
+    } else
+        return time;
 }
 
-void DaylightSavingTime::unapplyDst(time_t &time)
+time_t DaylightSavingTime::unconsiderDst(time_t time)
 {
-    if (DST_LOCATION == Europe)
-        time -= 3600;
+    // Since DST may already have been applied to this time, check if it would be active with and
+    // without DST correction.
+    bool dstActive = isDstActive(time);
+    bool dstActiveAssumingApplied = isDstActive(time - 3600);
+
+    if (dstActive != dstActiveAssumingApplied)
+    {
+        TRACE << "In DST transition, use previous DST active flag";
+        dstActive = m_wasDstActive;
+    }
+
+    if (dstActive)
+        return time - 3600;
+    else
+        return time;
 }
 
 bool DaylightSavingTime::isDstActive(time_t time)
@@ -64,6 +80,5 @@ bool DaylightSavingTime::isDstActive(time_t time)
     }
 
     bool dstActive = time >= m_dstStart && time < m_dstEnd;
-    TRACE << "DST active:" << dstActive;
     return dstActive;
 }

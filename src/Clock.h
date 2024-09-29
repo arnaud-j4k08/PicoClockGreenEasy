@@ -101,7 +101,6 @@ private:
     
     time_t m_time = 0; // Current time as unix time, local (not UTC), not considering DST
     tm m_tm = {}; // Current time as tm, considering DST
-    bool m_dstActive = false;
 
     bool m_clockAdjusted = true;
 };
