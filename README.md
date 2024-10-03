@@ -1,7 +1,7 @@
 ![image](Clock.jpeg)
 
 # Pico Clock Green & Easy
-This project is an easy-to-use firmware for the Waveshare Pico-Clock-Green written in C++. See also the [Introduction video on Youtube](https://youtu.be/PO-PY_PxIrI). For any question, feel free to post in the [Discussion section](https://github.com/arnaud-j4k08/PicoClockGreenEasy/discussions).
+This project is an easy-to-use firmware for the Waveshare Pico-Clock-Green written in C++. See also the [Introduction video on YouTube](https://youtu.be/PO-PY_PxIrI). For any question, feel free to post in the [Discussion section](https://github.com/arnaud-j4k08/PicoClockGreenEasy/discussions).
 
 # Features
 ## User features
