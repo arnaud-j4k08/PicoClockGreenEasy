@@ -50,9 +50,19 @@ private:
     // Menu and functions
     std::vector<std::unique_ptr<AbstractFunction>> *m_currentMenu = &m_rootMenu;
     std::vector<std::unique_ptr<AbstractFunction>> m_rootMenu;
+    std::vector<std::unique_ptr<AbstractFunction>> *m_wxMenu = nullptr;         // kdkWx
     int m_curFuncIdx = 0;
     int m_dateFuncIdx = 0;
     int m_temperatureFuncIdx = 0;
+
+//  indexes for Weather scrolling test  // kdkWx    
+    int m_WxNameFuncIdx = 0;            // kdkWx
+    int m_WxConditionsFuncIdx = 1;      // kdkWx
+    int m_WxTemperatureFuncIdx = 2;     // kdkWx
+    int m_WxWindFuncIdx = 3;            // kdkWx
+    int m_WxWindDirectionFuncIdx = 4;   // kdkWx   
+    int m_WxHumidityFuncIdx = 5;        // kdkWx
+
     Stopwatch *m_stopwatchFunc = nullptr;
     Countdown *m_countdownFunc = nullptr;
 

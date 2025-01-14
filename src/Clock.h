@@ -30,6 +30,23 @@ public:
         int lastSyncDriftMs = 0;
     };
 
+// Structure for Weather information.  Probably belongs in Weather.h, not here.  //kdkWx
+    struct WxInfo                                       //kdkWx
+    {                                                   //kdkWx
+        std::string conditions = "Clearsky";            //kdkWx
+        float ctemp = 19.18;                            //kdkWx
+        int pressure = 1022;                            //kdkWx
+        int humidity = 61;                              //kdkWx
+        float windSpeed = 11.5;                         //kdkWx
+        int windDegree = 320;                           //kdkWx
+        std::string windCardinal = "NNW";               //kdkWx
+        uint64_t sunRise = 1736512199;                  //kdkWx
+        uint64_t sunSet = 1736546826;                   //kdkWx
+        uint64_t wxTimezone = -18000;                   //kdkWx
+        std::string cityName = "Round Hill";            //kdkWx
+        uint64_t wxDateTime = 1736517544;               //kdkWx
+    };                                                  //kdkWx
+
     // Beware that the object keeps a reference on settings, so it must exists at least as long as
     // the object.
     Clock(int tickPerSec, Settings &settings);
@@ -80,6 +97,7 @@ public:
 
     void syncNow();
     void syncInfo(SyncInfo &info);
+    void wxInfo(WxInfo &info);                                      //kdkWx
 
 private:
     struct Time
@@ -114,9 +132,11 @@ private:
     void setTmFromTime();
     void setFromRtcTime(tm tm);
     void logSync(Settings::SyncSource source, int driftMs);
+    //  void logWeather(WxInfo);                    // kdkWx We will need one to update the weather info structure above.   
     tm startRtcSync();
     void startNtpSync();
     void startGpsSync();
+    //  void startWxSync();                         // kdkWx We will need this once we start updating every 15min or 30 minutes
 
     enum RtcSync
     {
@@ -144,6 +164,7 @@ private:
     ExternalSync m_extSync = Inactive;
 
     SyncInfo m_syncInfo;
+    WxInfo m_wxInfo;                                                    // kdkWx  Points to our Weather structure above
 
     DaylightSavingTime m_dst;
     time_t m_time = 0; // Current time as unix time, local (not UTC), not considering DST

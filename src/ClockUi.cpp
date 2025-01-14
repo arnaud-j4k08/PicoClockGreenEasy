@@ -15,6 +15,7 @@
 #include "Functions/Stopwatch.h"
 #include "Functions/Submenu.h"
 #include "Functions/SyncInfo.h"
+#include "Functions/WeatherInfo.h"          // kdkWx
 #include "Functions/SyncNow.h"
 #include "Functions/SyncSource.h"
 #include "Functions/Temperature.h"
@@ -66,6 +67,9 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
         addFunctionAndReturnPtr<Submenu>(uiText(TextId::Stopwatch), &m_rootMenu);
     Submenu *syncSubmenu = 
         addFunctionAndReturnPtr<Submenu>(uiText(TextId::Sync), &m_rootMenu);
+    Submenu *wxSubmenu =                                                            // kdkWx
+        addFunctionAndReturnPtr<Submenu>(uiText(TextId::Weather), &m_rootMenu);     // kdkWx
+        m_wxMenu = wxSubmenu->menu();                                               // kdkWx  For use in AutoScroll    
     addFunction<Options>();
 
     TRACE << "Add functions of the alarm submenu";
@@ -90,6 +94,18 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
     syncNow->setNextFunction(syncSubmenu->addFunction<SyncInfo>(this, SyncInfo::LastSyncTimestamp));
     syncSubmenu->addFunction<SyncInfo>(this, SyncInfo::LastSyncDrift);
     syncSubmenu->addFunction<WifiStatus>(this);
+
+    TRACE << "Add functions of the Wx submenu";                                 // kdkWx
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxName);             // kdkWx
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxConditions);       // kdkWx
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxTemperature);      // kdkWx
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWind);             // kdkWx
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWindDirection);    // kdkWx
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxHumidity);         // kdkWx
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxPressure);         // kdkWx
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunrise);          // kdkWx
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunset);           // kdkWx
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxDateTime);         // kdkWx
 
     // Remember the last used time function in case auto scroll is enabled.
     if (m_currentMenu->at(m_curFuncIdx)->isTimeFunction())
@@ -199,6 +215,43 @@ void ClockUi::onFrameCallback()
                     break;
             }
         }
+
+// duplicating autoscroll for a test of Weather submenu scrolling                                   // kdkWx
+                                                                                                    // kdkWx
+        if (m_settings.get().autoScroll &&                                                          // kdkWx
+            m_editedValueIndex == NoEditing &&                                                      // kdkWx
+            m_currentMenu == m_wxMenu &&                                                            // kdkWx      
+            m_secondsWithoutUserInput >= AUTO_SCROLL_DELAY_SEC)                                     // kdkWx
+        {                                                                                           // kdkWx
+            switch(m_clock.get().tm_sec)                                                            // kdkWx
+            {                                                                                       // kdkWx
+                case 0:                                                                             // kdkWx
+                    m_curFuncIdx = m_WxNameFuncIdx;  // start with the City Name index of 0         // kdkWx
+                    startVertScrolling(-1);                                                         // kdkWx
+                    break;                                                                          // kdkWx
+                                                                                                    // kdkWx
+                case 12:      // 12 seconds                                                         // kdkWx
+                    m_curFuncIdx = m_WxTemperatureFuncIdx;    // The temperature index of 2         // kdkWx
+                    startVertScrolling(-1);                                                         // kdkWx
+                    break;                                                                          // kdkWx
+                                                                                                    // kdkWx
+                case 24:  // 24 seconds                                                             // kdkWx
+                    m_curFuncIdx = m_WxWindFuncIdx;  // Then the Wind speed index of 3              // kdkWx
+                    startVertScrolling(-1);                                                         // kdkWx
+                    break;                                                                          // kdkWx
+                                                                                                    // kdkWx
+                case 36:  // 36 seconds                                                             // kdkWx
+                    m_curFuncIdx = m_WxWindDirectionFuncIdx; // Then the wind direction index of 4  // kdkWx
+                    startVertScrolling(-1);                                                         // kdkWx
+                    break;                                                                          // kdkWx
+                                                                                                    // kdkWx
+                case 48:  // 48 seconds                                                             // kdkWx
+                    m_curFuncIdx = m_WxConditionsFuncIdx;  // Then the conditions index of 1        // kdkWx
+                    startVertScrolling(-1);                                                         // kdkWx
+                    break;                                                                          // kdkWx
+            }                                                                                       // kdkWx
+        }                                                                                           // kdkWx
+
     }
 
     handleControlFromConsole();

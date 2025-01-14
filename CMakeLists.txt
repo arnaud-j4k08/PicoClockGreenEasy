@@ -1,3 +1,19 @@
+# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
+if(WIN32)
+    set(USERHOME $ENV{USERPROFILE})
+else()
+    set(USERHOME $ENV{HOME})
+endif()
+set(sdkVersion 2.1.0)
+set(toolchainVersion 13_3_Rel1)
+set(picotoolVersion 2.1.0)
+set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
+if (EXISTS ${picoVscode})
+    include(${picoVscode})
+endif()
+# ===================================================================================
+set(PICO_BOARD pico_w CACHE STRING "Board type")
+
 include (UserConfig.cmake)
 
 cmake_minimum_required(VERSION 3.13)
@@ -38,6 +54,7 @@ add_executable( ${PROJECT_NAME}
                 src/Functions/Temperature.cpp
                 src/Functions/Time.cpp
                 src/Functions/WifiStatus.cpp
+                src/Functions/WeatherInfo.cpp
 
                 src/PicoClockHw/Button.cpp
                 src/PicoClockHw/Buzzer.cpp

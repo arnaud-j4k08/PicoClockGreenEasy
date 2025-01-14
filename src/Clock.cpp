@@ -8,6 +8,7 @@ Clock::Clock(int tickPerSec, Settings &settings) :
     m_settings(settings),
     m_rtc(std::make_unique<Rtc>()),
     m_ntp(std::make_unique<Ntp>())
+    // Todo kdkWx  I think that we will need a make_unique for Weather class.  Note that there isn't one for GPS.  Probably m_wx
 {
     // Initialize m_time and m_tm from the RTC. It will be used for displaying time 
     // while waiting for the sync from the RTC to be finished.
@@ -31,6 +32,7 @@ Clock::Clock(int tickPerSec, Settings &settings) :
 
     // Initialize GPS synchronization. NTP will be initialized later, as it requires the Wi-Fi to be
     // initialized.
+    // kdkWx.  Weather will need to be later as well, as it depends on Wi-Fi.  
     using namespace std::placeholders;
     m_gps.setTimeCallback(
         std::bind(&Clock::onExternalTimeReceived, this, _1, _2, Settings::SyncSource::Gps));
@@ -59,6 +61,8 @@ void Clock::onWifiInited()
             startNtpSync();
     } else
         m_ntp.release();
+    // Todo.  kdkWx We will want to start Weather Sync here, if m_wx->init()   Ntp.cpp has an init function.  Create a copy of Ntp.cpp and call it Weather.cpp
+    // startWxSync();    // kdkWx    
 }
 
 void Clock::syncNow()
@@ -118,6 +122,28 @@ void Clock::startNtpSync()
     }
 }
 
+//void Clock::startWxSync()    //kdkWx  we will need something like this. 
+//{
+//    TRACE << "startWxsync";
+//    auto status = Wifi::linkStatus();
+//    TRACE << "Wifi link status: " <<Wifi::linkStatusToString(status);
+//    if (status != Wifi::Connected)
+//    {
+//        TRACE << "Wifi::connectAsync";
+//        Wifi::connectAsync();
+//        TRACE << "Wifi::connectAsync done";
+//        m_WxSync = WxWaitingForWifi;   // Will need a new value,  sounds like an enum  Look for m_extSync and duplicate
+//    } else
+//    {
+//        TRACE << "Already connected";
+//        if (m_wx)                      // Will need a new value, see where it comes from on call to Clock  was m_ntp  Ntp.cpp has a startRequest function
+//        {
+//            m_wx->startRequest();      // Ntp.cpp has a startRequest function
+//            m_WxSync = WxInProgress;
+//        }
+//    }
+//}
+
 void Clock::startGpsSync()
 {
     m_gps.setEnabled(true);
@@ -127,7 +153,8 @@ void Clock::startGpsSync()
 void Clock::onExternalTimeReceived(time_t utcTime, uint32_t ms, Settings::SyncSource source)
 {
     TRACE << "Received external UTC time:" << utcTime <<"." <<ms;
-    time_t newTime = utcTime + UTC_OFFSET * 60 * 60;
+//    time_t newTime = utcTime + UTC_OFFSET * 60 * 60;
+    time_t newTime = utcTime + -5 * 60 * 60;
     int drift = 
         (m_time * 1000 + m_tickCount * 1000 / m_tickCount.wrapValue() - newTime * 1000 - ms);
     m_time = newTime;
@@ -232,6 +259,15 @@ void Clock::monitorWifiConnection()
                 } else
                     m_extSync = Inactive;
                 break;
+    //          if (m_wx)    // kdkWx  If we have a Weather get waiting for wifi    // kdkWx
+    //            {                                                                 // kdkWx
+    //                TRACE << "Wifi connected, start Weather request";             // kdkWx
+    //                m_wx->startRequest();                                         // kdkWx
+    //                TRACE << "Weather Request started";                           // kdkWx
+    //                m_WxSync = WxInProgress;                                      // kdkWx
+    //            } else                                                            // kdkWx
+    //                m_WxSync = Inactive;                                          // kdkWx
+    //            break;                                                            // kdkWx     
             default:
                 TRACE << "Connection failed";
                 m_extSync = Inactive;
@@ -323,6 +359,33 @@ void Clock::syncInfo(SyncInfo &info)
 {
     info = m_syncInfo;
 }
+
+// We will need something like this for weather.  Probably belongs in Weather.cpp, after OpenWeatherMap api success    kdkWx
+//void Clock::logWeather(Clock::WxInfo &info)                   // kdkWx
+//{                                                             // kdkWx
+//    m_wxInfo.conditions = info.conditions;                    // kdkWx
+//    m_wxInfo.ctemp = info.ctemp;                              // kdkWx
+//    m_wxInfo.pressure = info.pressure;                        // kdkWx
+//    m_wxInfo.humidity = info.humidity;                        // kdkWx
+//    m_wxInfo.windSpeed = info.WindSpeed;                      // kdkWx
+//    m_wxInfo.windDegree = info.windDegree;                    // kdkWx
+//    m_wxInfo.pwindCardinal = info.Cardinal;                   // kdkWx
+//    m_wxInfo.sunRise = info.sunRise;                          // kdkWx
+//    m_wxInfo.sunSet = info.sunSet;                            // kdkWx
+//    m_wxInfo.wxTimezone = info.wxTimezone;                    // kdkWx
+//    m_wxInfo.cityName = info.cityName;                        // kdkWx
+//    m_wxInfo.hwxDateTime = info.DateTime;                     // kdkWx
+// or                                                           // kdkWx
+//    can we m_wxInfo = info  ?   is it just that easy?         // kdkWx
+//                                                              // kdkWx
+//}                                                             // kdkWx
+//                                                              // kdkWx
+//                                                              // kdkWx
+void Clock::wxInfo(WxInfo &info)                                // kdkWx
+{                                                               // kdkWx
+    info = m_wxInfo;                                            // kdkWx  m_wxInfo is a pointer to structure in Clock.h or Weather.h
+}                                                               // kdkWx
+
 
 bool Clock::nextAlarm(int &weekday, int &hour, int &min) const
 {
