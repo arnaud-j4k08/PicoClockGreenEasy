@@ -50,6 +50,7 @@ add_executable( ${PROJECT_NAME}
                 src/Functions/Submenu.cpp
                 src/Functions/SyncInfo.cpp
                 src/Functions/SyncNow.cpp
+                src/Functions/SyncWxNow.cpp
                 src/Functions/SyncSource.cpp
                 src/Functions/Temperature.cpp
                 src/Functions/Time.cpp
@@ -63,6 +64,7 @@ add_executable( ${PROJECT_NAME}
                 src/PicoClockHw/Gps.cpp
                 src/PicoClockHw/Platform.cpp
                 src/PicoClockHw/Rtc.cpp
+                src/PicoClockHw/Weather.cpp
 )
 
 target_link_libraries(  ${PROJECT_NAME} 

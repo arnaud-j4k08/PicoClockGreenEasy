@@ -87,6 +87,18 @@ void Clock::syncNow()
     } 
 }
 
+void Clock::syncWxNow()                                     // kdkWx  Little stub, but mimics NTP syncing
+{                                                           // kdkWx
+    if (isSynchronizing())                                  // kdkWx  Checks for SyncingFromRTC or ExternalSync not inactive
+    {                                                       // kdkWx
+        TRACE << "Synchronization already in progress";     // kdkWx  
+        return;                                             // kdkWx
+    }                                                       // kdkWx
+                                                            // kdkWx
+    startWxSync();                                          // kdkWx
+                                                            // kdkWx
+}                                                           // kdkWx
+                                                            // kdkWx
 tm Clock::startRtcSync()
 {
     tm rtcTime;
@@ -122,27 +134,27 @@ void Clock::startNtpSync()
     }
 }
 
-//void Clock::startWxSync()    //kdkWx  we will need something like this. 
-//{
-//    TRACE << "startWxsync";
-//    auto status = Wifi::linkStatus();
-//    TRACE << "Wifi link status: " <<Wifi::linkStatusToString(status);
-//    if (status != Wifi::Connected)
-//    {
-//        TRACE << "Wifi::connectAsync";
-//        Wifi::connectAsync();
-//        TRACE << "Wifi::connectAsync done";
-//        m_WxSync = WxWaitingForWifi;   // Will need a new value,  sounds like an enum  Look for m_extSync and duplicate
-//    } else
-//    {
-//        TRACE << "Already connected";
-//        if (m_wx)                      // Will need a new value, see where it comes from on call to Clock  was m_ntp  Ntp.cpp has a startRequest function
-//        {
-//            m_wx->startRequest();      // Ntp.cpp has a startRequest function
-//            m_WxSync = WxInProgress;
-//        }
-//    }
-//}
+void Clock::startWxSync()                                                       // kdkWx  
+{                                                                               // kdkWx  
+    TRACE << "startWxsync";                                                     // kdkWx  
+    auto status = Wifi::linkStatus();                                           // kdkWx  
+    TRACE << "Wifi link status: " <<Wifi::linkStatusToString(status);           // kdkWx  
+    if (status != Wifi::Connected)                                              // kdkWx  
+    {                                                                           // kdkWx  
+        TRACE << "Wifi::connectAsync";                                          // kdkWx  
+        Wifi::connectAsync();                                                   // kdkWx  
+        TRACE << "Wifi::connectAsync done";                                     // kdkWx  
+        m_extSync = WxWaitingForWifi;                                           // kdkWx     New value in ExternalSync to avoid conflicts with NTP
+    } else                                                                      // kdkWx  
+    {                                                                           // kdkWx  
+        TRACE << "Already connected";                                           // kdkWx  
+//        if (m_wx)                                                             // kdkWx  was m_ntp  Ntp.cpp has a startRequest function. Duplicate in Weather.cpp
+//        {                                                                     // kdkWx  
+//            m_wx->startRequest();                                             // kdkWx       Ntp.cpp has a startRequest function. Duplicate in Weather.cpp  
+//            m_WxSync = WxInProgress;                                          // kdkWx  
+//        }                                                                     // kdkWx  
+    }                                                                           // kdkWx  
+}                                                                               // kdkWx  
 
 void Clock::startGpsSync()
 {
@@ -153,8 +165,7 @@ void Clock::startGpsSync()
 void Clock::onExternalTimeReceived(time_t utcTime, uint32_t ms, Settings::SyncSource source)
 {
     TRACE << "Received external UTC time:" << utcTime <<"." <<ms;
-//    time_t newTime = utcTime + UTC_OFFSET * 60 * 60;
-    time_t newTime = utcTime + -5 * 60 * 60;
+    time_t newTime = utcTime + UTC_OFFSET * 60 * 60;
     int drift = 
         (m_time * 1000 + m_tickCount * 1000 / m_tickCount.wrapValue() - newTime * 1000 - ms);
     m_time = newTime;
@@ -259,20 +270,36 @@ void Clock::monitorWifiConnection()
                 } else
                     m_extSync = Inactive;
                 break;
-    //          if (m_wx)    // kdkWx  If we have a Weather get waiting for wifi    // kdkWx
-    //            {                                                                 // kdkWx
-    //                TRACE << "Wifi connected, start Weather request";             // kdkWx
-    //                m_wx->startRequest();                                         // kdkWx
-    //                TRACE << "Weather Request started";                           // kdkWx
-    //                m_WxSync = WxInProgress;                                      // kdkWx
-    //            } else                                                            // kdkWx
-    //                m_WxSync = Inactive;                                          // kdkWx
-    //            break;                                                            // kdkWx     
             default:
                 TRACE << "Connection failed";
                 m_extSync = Inactive;
         }
     }
+
+    if (m_extSync == WxWaitingForWifi)                                              // kdkWx  Duplicated for Weather
+    {                                                                               // kdkWx
+        auto status = Wifi::linkStatus();                                           // kdkWx
+        switch (status)                                                             // kdkWx
+        {                                                                           // kdkWx
+            case Wifi::Connecting:                                                  // kdkWx
+            case Wifi::NoIp:                                                        // kdkWx
+                // Continue waiting for connection                                  // kdkWx
+                break;                                                              // kdkWx
+            case Wifi::Connected:                                                   // kdkWx
+    //          if (m_wx)                                                           // kdkWx
+    //            {                                                                 // kdkWx
+    //                TRACE << "Wifi connected, start Weather request";             // kdkWx
+    //                m_wx->startRequest();                                         // kdkWx
+    //                TRACE << "Weather Request started";                           // kdkWx
+    //                m_extSync = WxInProgress;                                     // kdkWx
+    //            } else                                                            // kdkWx
+    //                m_extSync = Inactive;                                         // kdkWx
+                break;                                                              // kdkWx     
+            default:                                                                // kdkWx  
+                TRACE << "Connection failed";                                       // kdkWx  
+                m_extSync = Inactive;                                               // kdkWx  
+        }                                                                           // kdkWx  
+    }                                                                               // kdkWx  
 }
 
 Settings::AlarmMode Clock::checkIfAlarmReached()

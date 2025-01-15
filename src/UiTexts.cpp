@@ -77,7 +77,8 @@ namespace
             "Wind: ",           // kdkWx
             "Sunrise: ",        // kdkWx
             "Sunset: ",         // kdkWx
-            "Weather for: ",    // kdkWx            
+            "Weather for: ",    // kdkWx
+            "Update Weather Now", // kdkWx            
     };
 }
 

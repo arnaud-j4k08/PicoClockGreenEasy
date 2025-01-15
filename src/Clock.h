@@ -96,6 +96,7 @@ public:
     }
 
     void syncNow();
+    void syncWxNow();                                               // kdkWx
     void syncInfo(SyncInfo &info);
     void wxInfo(WxInfo &info);                                      //kdkWx
 
@@ -136,7 +137,7 @@ private:
     tm startRtcSync();
     void startNtpSync();
     void startGpsSync();
-    //  void startWxSync();                         // kdkWx We will need this once we start updating every 15min or 30 minutes
+    void startWxSync();                             // kdkWx We will need this once we start updating every 15min or 30 minutes
 
     enum RtcSync
     {
@@ -150,7 +151,9 @@ private:
         Inactive,
         NtpWaitingForWifi,
         NtpInProgress,
-        GpsInProgress
+        GpsInProgress,
+        WxWaitingForWifi,                           // kdkWx  Probably better to have it here, rather than a new enum.  Conflict with NTP
+        WxInProgress                                // kdkWx  
     };
 
     CyclicCounter m_tickCount;

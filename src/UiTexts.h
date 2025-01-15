@@ -86,6 +86,7 @@ enum class TextId
     Sunrise,        // kdkWx
     Sunset,         // kdkWx
     CityName,       // kdkWx
+    SyncWxNow,      // kdkWx
 
 
     TextCount

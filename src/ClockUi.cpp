@@ -17,6 +17,7 @@
 #include "Functions/SyncInfo.h"
 #include "Functions/WeatherInfo.h"          // kdkWx
 #include "Functions/SyncNow.h"
+#include "Functions/SyncWxNow.h"            // kdkWx
 #include "Functions/SyncSource.h"
 #include "Functions/Temperature.h"
 #include "Functions/Time.h"
@@ -106,6 +107,7 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
     wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunrise);          // kdkWx
     wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunset);           // kdkWx
     wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxDateTime);         // kdkWx
+    wxSubmenu->addFunction<SyncWxNow>(this);                                    // kdkWx
 
     // Remember the last used time function in case auto scroll is enabled.
     if (m_currentMenu->at(m_curFuncIdx)->isTimeFunction())
