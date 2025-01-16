@@ -2,6 +2,7 @@
 #include "ClockUi.h"
 #include "Utils/Trace.h"
 
+#include "PicoClockHw/HttpRequest.h"
 #include "PicoClockHw/Platform.h"
 #include "PicoClockHw/Wifi.h"
 
@@ -23,6 +24,19 @@ int main()
     TRACE << "Wifi::init()";
     if (Wifi::init())
         ui.onWifiInited();
+
+    // TODO: Remove this, this is only for testing. Wait until the Wifi connection initiated in
+    // Clock is completed.
+    while (Wifi::linkStatus() != Wifi::Connected)
+        ;
+    TRACE << "Connected!";
+    
+    // TODO: Only for testing. Perform the request and output the result.
+    HttpRequest req;
+    req.start();
+    while (!req.isComplete())
+        ;
+    std::cout << "HTTP request result: " << req.content() <<std::endl;
 
     TRACE <<"Start the loop\n";
     Platform::runMainLoop();
