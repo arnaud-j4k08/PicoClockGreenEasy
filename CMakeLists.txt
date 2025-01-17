@@ -13,10 +13,18 @@ if (EXISTS ${picoVscode})
 endif()
 # ===================================================================================
 set(PICO_BOARD pico_w CACHE STRING "Board type")
-
-include (UserConfig.cmake)
+# Include the user configuration. The UserConfig.cmake at the root of the repo can be overriden by 
+# another UserConfig.cmake file one directory upper (outside of the repo to avoid having to modify 
+# it).
+if (EXISTS "../UserConfig.cmake")
+        include (../UserConfig.cmake)
+else()
+        include (UserConfig.cmake)
+endif()
 
 cmake_minimum_required(VERSION 3.13)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 
 # initialize the SDK based on PICO_SDK_PATH
 # note: this must happen before project()
@@ -62,6 +70,7 @@ add_executable( ${PROJECT_NAME}
                 src/PicoClockHw/Display.cpp
                 src/PicoClockHw/Flash.cpp
                 src/PicoClockHw/Gps.cpp
+                src/PicoClockHw/HttpRequest.cpp
                 src/PicoClockHw/Platform.cpp
                 src/PicoClockHw/Rtc.cpp
                 src/PicoClockHw/Weather.cpp
@@ -90,7 +99,18 @@ if (PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PI
         target_sources(${PROJECT_NAME} PRIVATE
                 src/PicoClockHw/Ntp.cpp 
                 src/PicoClockHw/Wifi.cpp)
-        target_link_libraries(${PROJECT_NAME} pico_cyw43_arch_lwip_threadsafe_background)
+        target_link_libraries(${PROJECT_NAME} 
+                pico_cyw43_arch_lwip_threadsafe_background
+                pico_lwip_http
+                pico_lwip_mbedtls
+                pico_mbedtls)
+
+        # Ignore warnings from lwip code
+        set_source_files_properties(
+                ${PICO_LWIP_PATH}/src/apps/altcp_tls/altcp_tls_mbedtls.c
+                PROPERTIES
+                COMPILE_OPTIONS "-Wno-unused-result"
+                )                
 endif()
 
 # create map/bin/hex/uf2 file in addition to ELF.
@@ -100,5 +120,6 @@ pico_add_extra_outputs(${PROJECT_NAME})
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
 pico_enable_stdio_uart(${PROJECT_NAME} 0)
 
+# TODO: change this so that the lwip and mbedtls configs do not have to be at the root
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src )

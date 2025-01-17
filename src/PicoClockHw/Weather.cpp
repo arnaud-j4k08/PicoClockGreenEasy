@@ -10,9 +10,7 @@
 #include <lwip/pbuf.h>
 #include <lwip/udp.h>
 #include <pico/cyw43_arch.h>      // also in client example  
-#include <pico/async_context.h>   // from client example
-#include <lwip/altcp_tls.h>       // from client example
-#include "PicoClockHw/example_http_client_util.h" // from client example
+
 
 #include <iostream>             // from Arnaud's email for json parsing
 
@@ -20,7 +18,7 @@ namespace
 {
     const char *WX_SERVER = "pool.ntp.org";
     const char *Weather_HOST = "api.openweathermap.org";
-    const char *Weather_URL_Request = "/data/2.5/weather?zip=20141,us&appid=481f82196c84140694a7376bb11125ea&units=imperial";
+    const char *Weather_URL_Request = "/data/2.5/weather?zip=20141,us&appid=74275fcc97d6695d0d421ccf1eb72271&units=imperial";
     unsigned int WX_PORT = 123;
     unsigned int WX_MSG_LEN = 48;
     unsigned WX_TIMEOUT_MS = 10 * 1000;
@@ -54,77 +52,33 @@ Weather::~Weather()
 
 void Weather::startRequest()
 {
-    // Set alarm in case udp requests are lost
+    // Set alarm in case http requests are lost
     MAKE_TRAMPOLINE(Weather, onWxFailed, userPtrAtEnd);
     m_timeoutAlarm = add_alarm_in_ms(WX_TIMEOUT_MS, onWxFailed, this, true);
 
-    // Get server address from DNS
-    // Note: cyw43_arch_lwip_begin/end should be used around calls into lwIP to ensure correct locking.
-    cyw43_arch_lwip_begin();
-    MAKE_TRAMPOLINE(Weather, onWxDnsFound, userPtrAtEnd);
-    int err = dns_gethostbyname(WX_SERVER, &m_serverAddress, onWxDnsFound, this);
-    cyw43_arch_lwip_end();
-
-    switch (err)
-    {
-        case ERR_OK:
-            sendWxRequest(); // DNS result was cached, proceed with the NTP request
-            break;
-        case ERR_INPROGRESS:
-            m_state = WaitingForDns;
-            break;
-        default:
-            TRACE <<"dns request failed";
-            m_state = DnsFailed;
-
-            if (m_failCallback)
-                m_failCallback(DnsFailed);
-    }
+    sendWxRequest(); // DNS result was cached, proceed with the NTP request
+  
 }
 
-// Callback for dns_gethostbyname
-void Weather::onWxDnsFound(const char *hostname, const ip_addr_t *ipaddr) 
-{
-    if (ipaddr != nullptr) 
-    {
-        m_serverAddress = *ipaddr;
-        TRACE <<"Wx address:"<<ipaddr_ntoa(ipaddr);
-        sendWxRequest();
-    } else 
-    {
-        TRACE <<"Wx dns request failed";
-        m_state = DnsFailed;
-        if (m_failCallback)
-            m_failCallback(DnsFailed);
-    }
-}
 
 void Weather::sendWxRequest() 
 {
-    cyw43_arch_lwip_begin();
-    struct pbuf *p = pbuf_alloc(PBUF_TRANSPORT, WX_MSG_LEN, PBUF_RAM);
-    auto req = static_cast<uint8_t *>(p->payload);
-    memset(req, 0, WX_MSG_LEN);
-    req[0] = 0x1b;
-    udp_sendto(m_pcb, p, &m_serverAddress, WX_PORT);
-    pbuf_free(p);
-    cyw43_arch_lwip_end();
+
     m_state = WaitingForResponse;
 
-    EXAMPLE_HTTP_REQUEST_T req3 = {0};
-    req3.hostname = "api.openweathermap.org";
-    req3.url = "/data/2.5/weather?zip=20141,us&appid=481f82196c84140694a7376bb11125ea&units=imperial";
-    req3.headers_fn = http_client_header_print_fn;
-    req3.recv_fn = http_client_receive_print_fn;
+//    EXAMPLE_HTTP_REQUEST_T req3 = {0};
+//    req3.hostname = "api.openweathermap.org";
+//    req3.url = "/data/2.5/weather?zip=20141,us&appid=74275fcc97d6695d0d421ccf1eb72271&units=imperial";
+//    req3.headers_fn = http_client_header_print_fn;
+//    req3.recv_fn = http_client_receive_print_fn;
 // Problems start here
 //    req3.tls_config = altcp_tls_create_config_client(NULL, 0); // https
 printf("Beginning my Weather HTTPs Request\n");    
-    int result = http_client_request_sync(cyw43_arch_async_context(), &req3);
+//    int result = http_client_request_sync(cyw43_arch_async_context(), &req3);
 printf("\nResult of my Weather HTTPs Request:  ");
 
 }
 
-// Callback for HTTPs_recv on Weather data reception
 void Weather::onMsgReceived(struct udp_pcb *pcb, struct pbuf *p, const ip_addr_t *addr, u16_t port) 
 {
 
@@ -239,3 +193,35 @@ int ExtractDataFromJson()   // extract the weather fields from the received json
 
     return 0;
 }
+
+//std::string Weather::getCardinal(int degrees) const   // This is currently a lot to do each second.  If it is done on sync, not so much kdkWx
+//{
+//    if (degrees < 22) return "N";
+//    if (degrees < 67) return "NE";
+//    if (degrees < 113) return "E";
+//    if (degrees < 158) return "SE";
+//    if (degrees < 202) return "S";
+//    if (degrees < 248) return "SW";
+//    if (degrees < 293) return "W";
+//    if (degrees < 338) return "NW";
+//    return "N";
+
+//    if (degrees < 11) return "N";
+//    if (degrees < 34) return "NNE";
+//    if (degrees < 56) return "NE";
+//    if (degrees < 79) return "ENE";
+//    if (degrees < 101) return "E";
+//    if (degrees < 123) return "ESE";
+//    if (degrees < 146) return "SE";
+//    if (degrees < 169) return "SSE";
+//    if (degrees < 191) return "S";
+//    if (degrees < 214) return "SSW";
+//    if (degrees < 236) return "SW";
+//    if (degrees < 259) return "WSW";
+//    if (degrees < 282) return "W";
+//    if (degrees < 304) return "WNW";
+//    if (degrees < 327) return "NW";
+//    if (degrees < 349) return "NNW";
+//    return "N";
+
+//}

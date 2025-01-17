@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#ifdef TRACE_TO_STDIO
+//#ifdef TRACE_TO_STDIO
 
 #define TRACE Trace(__FILE__, __LINE__)
 
@@ -48,24 +48,24 @@ private:
     bool m_autoSpace = true;
 };
 
-#else // TRACE_TO_STDIO
-
-#define TRACE Trace()
-
-class SetAutoSpace
-{
-public:
-    SetAutoSpace(bool /*autoSpace*/) {}
-};
-
-class Trace
-{
-public:
-    template <typename T>
-    Trace &operator <<(const T &value)
-    {
-        return *this;
-    }
-};
-
-#endif // TRACE_TO_STDIO
+//#else // TRACE_TO_STDIO
+//
+//#define TRACE Trace()
+//
+//class SetAutoSpace
+//{
+//public:
+//    SetAutoSpace(bool /*autoSpace*/) {}
+//};
+//
+//class Trace
+//{
+//public:
+//    template <typename T>
+//    Trace &operator <<(const T &value)
+//    {
+//        return *this;
+//    }
+//};
+//
+//#endif // TRACE_TO_STDIO

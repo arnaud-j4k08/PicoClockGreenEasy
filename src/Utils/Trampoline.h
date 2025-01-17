@@ -1,4 +1,7 @@
 #pragma once
+// TODO: find a way to not have to include this
+// To use repeating_timer_t
+#include <pico/time.h>
 
 // Make a global function that calls the method of the given Class so that it is suitable for 
 // passing to a C function that expects a function pointer as callback. The type parameter 
