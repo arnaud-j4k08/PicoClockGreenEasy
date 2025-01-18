@@ -26,7 +26,8 @@ void HttpRequest::start()
     httpc_get_file_dns(
         "api.openweathermap.org",  // server_name,
         443,       // port,
-        "/data/2.5/weather?zip=20141,us&appid=SuperSecretKey&units=imperial",       // const char *uri,
+        "/data/2.5/weather?zip=20141,us&appid=SuperSecretKey&units=imperial",
+//        "/data/2.5/weather?zip=20141,us&appid=" + OPEN_WEATHER_APPID +"&units=imperial",        // const char *uri,
         &m_settings,  // settings,
         receive,  // altcp_recv_fn recv_fn,
         this,  // callback_arg,
@@ -60,21 +61,61 @@ err_t HttpRequest::receive(struct altcp_pcb *conn, struct pbuf *p, err_t err)
     m_content += std::string(static_cast<char *>(p->payload), p->len);
     json += std::string(static_cast<char *>(p->payload), p->len);
   
-    std::cout <<"conditions: " <<HttpRequest::extractStr(json, "description") <<std::endl;
-    std::cout <<"ctemp: " <<HttpRequest::extract(json, "temp") <<std::endl;
-    std::cout <<"pressure: " <<HttpRequest::extract(json, "pressure") <<std::endl;
-    std::cout <<"humidity: " <<HttpRequest::extract(json, "humidity") <<std::endl;        
-    std::cout <<"windSpeed: " <<HttpRequest::extract(json, "speed") <<std::endl;
-    std::cout <<"windDegree: " <<HttpRequest::extract(json, "deg") <<std::endl;
-    // calculate and display windCardinal
-    std::cout <<"sunRise: " <<HttpRequest::extract(json, "sunrise") <<std::endl;
-    std::cout <<"sunSet: " <<HttpRequest::extract(json, "sunset") <<std::endl;
-    std::cout <<"wxTimeZone: " <<HttpRequest::extract(json, "timezone") <<std::endl;
-    std::cout <<"cityName: " <<HttpRequest::extractStr(json, "name") <<std::endl;
-    std::cout <<"wxDateTime: " <<HttpRequest::extract(json, "dt") <<std::endl;
+    if (p->len < 400)
+        return ERR_OK;
 
     Clock::WxInfo info2;
     //clock().wxInfo(info2);
+
+    tempstr2 = HttpRequest::extractStr(json, "description");
+    info2.conditions = tempstr2;
+    std::cout <<"conditions: " <<tempstr2  <<std::endl;
+//    std::cout <<"conditions: " <<HttpRequest::extractStr(json, "description") <<std::endl;
+    tempstr2 = HttpRequest::extract(json, "temp");
+    info2.ctemp = std::stof(tempstr2);
+    std::cout <<"ctemp: " <<tempstr2 <<std::endl;
+//    std::cout <<"ctemp: " <<HttpRequest::extract(json, "temp") <<std::endl;
+    tempstr2 = HttpRequest::extract(json, "pressure");
+    info2.pressure = std::stoi(tempstr2);
+    std::cout <<"pressure: " <<tempstr2 <<std::endl;
+//    std::cout <<"pressure: " <<HttpRequest::extract(json, "pressure") <<std::endl;
+    tempstr2 = HttpRequest::extract(json, "humidity");
+    info2.humidity = std::stoi(tempstr2);
+    std::cout <<"humidity: " <<tempstr2 <<std::endl;
+//    std::cout <<"humidity: " <<HttpRequest::extract(json, "humidity") <<std::endl;
+    tempstr2 = HttpRequest::extract(json, "speed");
+    info2.windSpeed = std::stof(tempstr2);
+    std::cout <<"windSpeed: " <<tempstr2 <<std::endl;       
+//    std::cout <<"windSpeed: " <<HttpRequest::extract(json, "speed") <<std::endl;
+    tempstr2 = HttpRequest::extract(json, "deg");
+    info2.windDegree = std::stoi(tempstr2);
+    std::cout <<"windDegree: " <<tempstr2 <<std::endl;
+//    std::cout <<"windDegree: " <<HttpRequest::extract(json, "deg") <<std::endl;
+    info2.windCardinal = "BAD";
+    // calculate and display windCardinal
+    tempstr2 = HttpRequest::extract(json, "sunrise");
+    info2.sunRise = std::stoull(tempstr2);
+    std::cout <<"sunRise: " <<tempstr2 <<std::endl;
+//    std::cout <<"sunRise: " <<HttpRequest::extract(json, "sunrise") <<std::endl;
+    tempstr2 = HttpRequest::extract(json, "sunset");
+    info2.sunSet = std::stoull(tempstr2);
+    std::cout <<"sunSet: " <<tempstr2 <<std::endl;
+//    std::cout <<"sunSet: " <<HttpRequest::extract(json, "sunset") <<std::endl;
+    tempstr2 = HttpRequest::extract(json, "timezone");
+    info2.wxTimezone = std::stoull(tempstr2);
+    std::cout <<"wxTimeZone: " <<tempstr2 <<std::endl;
+//    std::cout <<"wxTimeZone: " <<HttpRequest::extract(json, "timezone") <<std::endl;
+    tempstr2 = HttpRequest::extractStr(json, "name");
+    info2.cityName = tempstr2;
+    std::cout <<"cityName: " <<tempstr2 <<std::endl;
+//    std::cout <<"cityName: " <<HttpRequest::extractStr(json, "name") <<std::endl;
+    tempstr2 = HttpRequest::extract(json, "dt");
+    info2.wxDateTime = std::stoull(tempstr2);
+    std::cout <<"wxDateTime: " <<tempstr2 <<std::endl;
+//    std::cout <<"wxDateTime: " <<HttpRequest::extract(json, "dt") <<std::endl;
+
+    //clock().logWeather(info2);
+
     return ERR_OK;
   
 }
@@ -88,6 +129,11 @@ std::string HttpRequest::extract(const std::string &json, const std::string &nam
     {
         auto beginPos = prefixPos + prefix.size();
         auto endPos = json.find(",", beginPos);
+        auto endPosbrace = json.find("}", beginPos);
+        if (endPosbrace != std::string::npos && endPos > endPosbrace)
+        { 
+            endPos = endPosbrace;
+        }
         return json.substr(beginPos, endPos - beginPos);
     } else
         return "";

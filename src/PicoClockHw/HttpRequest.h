@@ -6,7 +6,7 @@
 #include "lwip/apps/http_client.h"
 #include "Functions/AbstractFunction.h"
 
-class HttpRequest
+class HttpRequest  
 {
 public:
     HttpRequest();
@@ -27,6 +27,7 @@ private:
     
     std::string m_content;
     std::string json;
+    std::string tempstr2;
 
     bool m_complete = false;
 };

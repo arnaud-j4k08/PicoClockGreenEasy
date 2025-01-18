@@ -18,7 +18,7 @@ namespace
 {
     const char *WX_SERVER = "pool.ntp.org";
     const char *Weather_HOST = "api.openweathermap.org";
-    const char *Weather_URL_Request = "/data/2.5/weather?zip=20141,us&appid=74275fcc97d6695d0d421ccf1eb72271&units=imperial";
+    const char *Weather_URL_Request = "/data/2.5/weather?zip=20141,us&appid=SuperSecretKey&units=imperial";
     unsigned int WX_PORT = 123;
     unsigned int WX_MSG_LEN = 48;
     unsigned WX_TIMEOUT_MS = 10 * 1000;
@@ -68,7 +68,7 @@ void Weather::sendWxRequest()
 
 //    EXAMPLE_HTTP_REQUEST_T req3 = {0};
 //    req3.hostname = "api.openweathermap.org";
-//    req3.url = "/data/2.5/weather?zip=20141,us&appid=74275fcc97d6695d0d421ccf1eb72271&units=imperial";
+//    req3.url = "/data/2.5/weather?zip=20141,us&appid=SuperSecretKey&units=imperial";
 //    req3.headers_fn = http_client_header_print_fn;
 //    req3.recv_fn = http_client_receive_print_fn;
 // Problems start here

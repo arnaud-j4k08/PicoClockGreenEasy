@@ -388,24 +388,24 @@ void Clock::syncInfo(SyncInfo &info)
 }
 
 // We will need something like this for weather.  Probably belongs in Weather.cpp, after OpenWeatherMap api success    kdkWx
-//void Clock::logWeather(Clock::WxInfo &info)                   // kdkWx
-//{                                                             // kdkWx
-//    m_wxInfo.conditions = info.conditions;                    // kdkWx
-//    m_wxInfo.ctemp = info.ctemp;                              // kdkWx
-//    m_wxInfo.pressure = info.pressure;                        // kdkWx
-//    m_wxInfo.humidity = info.humidity;                        // kdkWx
-//    m_wxInfo.windSpeed = info.WindSpeed;                      // kdkWx
-//    m_wxInfo.windDegree = info.windDegree;                    // kdkWx
-//    m_wxInfo.pwindCardinal = info.Cardinal;                   // kdkWx
-//    m_wxInfo.sunRise = info.sunRise;                          // kdkWx
-//    m_wxInfo.sunSet = info.sunSet;                            // kdkWx
-//    m_wxInfo.wxTimezone = info.wxTimezone;                    // kdkWx
-//    m_wxInfo.cityName = info.cityName;                        // kdkWx
-//    m_wxInfo.hwxDateTime = info.DateTime;                     // kdkWx
+void Clock::logWeather(Clock::WxInfo &info)                   // kdkWx
+{                                                             // kdkWx
+    m_wxInfo.conditions = info.conditions;                    // kdkWx
+    m_wxInfo.ctemp = info.ctemp;                              // kdkWx
+    m_wxInfo.pressure = info.pressure;                        // kdkWx
+    m_wxInfo.humidity = info.humidity;                        // kdkWx
+    m_wxInfo.windSpeed = info.windSpeed;                      // kdkWx
+    m_wxInfo.windDegree = info.windDegree;                    // kdkWx
+    m_wxInfo.windCardinal = info.windCardinal;                // kdkWx
+    m_wxInfo.sunRise = info.sunRise;                          // kdkWx
+    m_wxInfo.sunSet = info.sunSet;                            // kdkWx
+    m_wxInfo.wxTimezone = info.wxTimezone;                    // kdkWx
+    m_wxInfo.cityName = info.cityName;                        // kdkWx
+    m_wxInfo.wxDateTime = info.wxDateTime;                     // kdkWx
 // or                                                           // kdkWx
 //    can we m_wxInfo = info  ?   is it just that easy?         // kdkWx
 //                                                              // kdkWx
-//}                                                             // kdkWx
+}                                                             // kdkWx
 //                                                              // kdkWx
 //                                                              // kdkWx
 void Clock::wxInfo(WxInfo &info)                                // kdkWx

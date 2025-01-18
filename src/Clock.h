@@ -133,6 +133,7 @@ private:
     void setTmFromTime();
     void setFromRtcTime(tm tm);
     void logSync(Settings::SyncSource source, int driftMs);
+    void logWeather(Clock::WxInfo &info); 
     //  void logWeather(WxInfo);                    // kdkWx We will need one to update the weather info structure above.   
     tm startRtcSync();
     void startNtpSync();

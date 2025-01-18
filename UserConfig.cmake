@@ -6,13 +6,15 @@ set(PICO_BOARD pico_w)
 set(TRACE_TO_STDIO "0")
 
 add_compile_definitions(
-    WIFI_SSID=\"TowneRidge\"
-    WIFI_PASSWORD=\"FredEFarquar\"
-    UTC_OFFSET=-5 # UTC offset as real number of hours. For example, set 5.5 for UTC+05:30.
+    OPEN_WEATHER_APPID=\"\"
+    OPEN_WEATHER_UNITS=\"\"
+    WIFI_SSID=\"\"
+    WIFI_PASSWORD=\"\"
+    UTC_OFFSET=0 # UTC offset as real number of hours. For example, set 5.5 for UTC+05:30.
 
     # Set location for automatic daylight saving time observation. 
     # Possible values: Europe, USA or Unknown (no automatic change)
-    DST_LOCATION=USA
+    DST_LOCATION=Europe
 
     # This can be enabled to simulate the three buttons using the standard input. Enter triggers SET
     # and the arrow keys trigger UP and DOWN.
