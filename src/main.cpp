@@ -27,18 +27,18 @@ int main()
 
     // TODO: Remove this, this is only for testing. Wait until the Wifi connection initiated in
     // Clock is completed.
-    while (Wifi::linkStatus() != Wifi::Connected)
-        ;
-    TRACE << "Connected!\n";
+    //while (Wifi::linkStatus() != Wifi::Connected)
+    //    ;
+    //TRACE << "Connected!\n";
     
     // TODO: Only for testing. Perform the request and output the result.
-    TRACE << "Creating HttpRequest object called req \n";
-    HttpRequest req;       // this is creating a class object called req
-    TRACE << "Issuing HttpRequest Start request\n ";
-    req.start();
-    while (!req.isComplete())
-        ;
-    std::cout << "HTTP request result: " << req.content() <<std::endl;
+    //TRACE << "Creating HttpRequest object called req \n";
+    //HttpRequest req;       // this is creating a class object called req
+    //TRACE << "Issuing HttpRequest Start request\n ";
+    //req.start();
+    //while (!req.isComplete())
+    //    ;
+    //std::cout << "HTTP request result: " << req.content() <<std::endl;
 
     TRACE <<"Start the loop\n";
     Platform::runMainLoop();

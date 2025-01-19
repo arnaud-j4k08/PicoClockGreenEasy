@@ -26,8 +26,8 @@ void HttpRequest::start()
     httpc_get_file_dns(
         "api.openweathermap.org",  // server_name,
         443,       // port,
-        "/data/2.5/weather?zip=20141,us&appid=SuperSecretKey&units=imperial",
-//        "/data/2.5/weather?zip=20141,us&appid=" + OPEN_WEATHER_APPID +"&units=imperial",        // const char *uri,
+        OPEN_WEATHER_MAP_URL,
+//        "/data/2.5/weather?zip=20141,us&appid=SuperSecretKey&units=imperial",
         &m_settings,  // settings,
         receive,  // altcp_recv_fn recv_fn,
         this,  // callback_arg,

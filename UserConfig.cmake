@@ -6,8 +6,8 @@ set(PICO_BOARD pico_w)
 set(TRACE_TO_STDIO "0")
 
 add_compile_definitions(
-    OPEN_WEATHER_APPID=\"\"
-    OPEN_WEATHER_UNITS=\"\"
+    OPEN_WEATHER_MAP_URL=\"\"  # There are so many options in the API, it is easiest to define them as a group. 
+#   OPEN_WEATHER_MAP_URL=\"/data/2.5/weather?zip=20141,us&appid=SuperSecretKey&units=imperial\"
     WIFI_SSID=\"\"
     WIFI_PASSWORD=\"\"
     UTC_OFFSET=0 # UTC offset as real number of hours. For example, set 5.5 for UTC+05:30.

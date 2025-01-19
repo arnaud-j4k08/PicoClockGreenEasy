@@ -11,7 +11,9 @@ bool isEnabledForFile(const std::string &file)
 {
     return 
         file == "main.cpp" ||
-        file == "HttpRequest.cpp";
+        file == "SyncWxNow.cpp" ||
+        file == "Clock.cpp" ||
+        file == "Weather.cpp";
 }
 } // namespace
 

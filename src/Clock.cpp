@@ -7,7 +7,8 @@ Clock::Clock(int tickPerSec, Settings &settings) :
     m_tickCount(tickPerSec), 
     m_settings(settings),
     m_rtc(std::make_unique<Rtc>()),
-    m_ntp(std::make_unique<Ntp>())
+    m_ntp(std::make_unique<Ntp>()),
+    m_wx(std::make_unique<Weather>())
     // Todo kdkWx  I think that we will need a make_unique for Weather class.  Note that there isn't one for GPS.  Probably m_wx
 {
     // Initialize m_time and m_tm from the RTC. It will be used for displaying time 
@@ -62,6 +63,8 @@ void Clock::onWifiInited()
     } else
         m_ntp.release();
     // Todo.  kdkWx We will want to start Weather Sync here, if m_wx->init()   Ntp.cpp has an init function.  Create a copy of Ntp.cpp and call it Weather.cpp
+    // For now, lets do the init, but not call the sync.  We will do the sync through SyncWxNow.cpp.
+    m_wx->init();
     // startWxSync();    // kdkWx    
 }
 
@@ -88,13 +91,14 @@ void Clock::syncNow()
 }
 
 void Clock::syncWxNow()                                     // kdkWx  Little stub, but mimics NTP syncing
-{                                                           // kdkWx
+{ 
+    TRACE << "Made it to syncWxNow";                                                           // kdkWx
     if (isSynchronizing())                                  // kdkWx  Checks for SyncingFromRTC or ExternalSync not inactive
     {                                                       // kdkWx
         TRACE << "Synchronization already in progress";     // kdkWx  
         return;                                             // kdkWx
     }                                                       // kdkWx
-                                                            // kdkWx
+        TRACE << "Past Check for Synchronizing";                                                                // kdkWx
     startWxSync();                                          // kdkWx
                                                             // kdkWx
 }                                                           // kdkWx
@@ -148,11 +152,13 @@ void Clock::startWxSync()                                                       
     } else                                                                      // kdkWx  
     {                                                                           // kdkWx  
         TRACE << "Already connected";                                           // kdkWx  
-//        if (m_wx)                                                             // kdkWx  was m_ntp  Ntp.cpp has a startRequest function. Duplicate in Weather.cpp
-//        {                                                                     // kdkWx  
-//            m_wx->startRequest();                                             // kdkWx       Ntp.cpp has a startRequest function. Duplicate in Weather.cpp  
-//            m_WxSync = WxInProgress;                                          // kdkWx  
-//        }                                                                     // kdkWx  
+        if (m_wx)                                                               // kdkWx  was m_ntp  
+        { 
+            TRACE << "Should be calling startRequest";                          // kdkWx  
+            m_wx->startRequest();                                               // kdkWx      
+        //    m_extSync = WxInProgress;
+            m_extSync = Inactive;     // Haven't figured where to clear it.     // kdkWx        HttpRequest has a start function.   
+        }                                                                     // kdkWx  
     }                                                                           // kdkWx  
 }                                                                               // kdkWx  
 
@@ -286,14 +292,15 @@ void Clock::monitorWifiConnection()
                 // Continue waiting for connection                                  // kdkWx
                 break;                                                              // kdkWx
             case Wifi::Connected:                                                   // kdkWx
-    //          if (m_wx)                                                           // kdkWx
-    //            {                                                                 // kdkWx
-    //                TRACE << "Wifi connected, start Weather request";             // kdkWx
-    //                m_wx->startRequest();                                         // kdkWx
-    //                TRACE << "Weather Request started";                           // kdkWx
-    //                m_extSync = WxInProgress;                                     // kdkWx
-    //            } else                                                            // kdkWx
-    //                m_extSync = Inactive;                                         // kdkWx
+              if (m_wx)                                                           // kdkWx
+                {                                                                 // kdkWx
+                    TRACE << "Wifi connected, start Weather request";             // kdkWx
+                    m_wx->startRequest();                                         // kdkWx
+                    TRACE << "Weather Request started";                           // kdkWx
+                //    m_extSync = WxInProgress;
+                    m_extSync = Inactive;                                     // kdkWx  Until we can do this cleanly
+                } else                                                            // kdkWx
+                    m_extSync = Inactive;                                         // kdkWx
                 break;                                                              // kdkWx     
             default:                                                                // kdkWx  
                 TRACE << "Connection failed";                                       // kdkWx  

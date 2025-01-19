@@ -5,10 +5,10 @@
 #include "Utils/Trampoline.h"
 #include "Utils/Trace.h"
 
+#include "Clock.h"
+
 #include <string.h>
 #include <time.h>
-#include <lwip/pbuf.h>
-#include <lwip/udp.h>
 #include <pico/cyw43_arch.h>      // also in client example  
 
 
@@ -16,13 +16,6 @@
 
 namespace
 {
-    const char *WX_SERVER = "pool.ntp.org";
-    const char *Weather_HOST = "api.openweathermap.org";
-    const char *Weather_URL_Request = "/data/2.5/weather?zip=20141,us&appid=SuperSecretKey&units=imperial";
-    unsigned int WX_PORT = 123;
-    unsigned int WX_MSG_LEN = 48;
-    unsigned WX_TIMEOUT_MS = 10 * 1000;
-
     uint32_t fromBigEndian(const uint8_t buf[4])
     {
         return buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3];
@@ -31,116 +24,140 @@ namespace
 
 bool Weather::init() 
 {
-    m_pcb = udp_new_ip_type(IPADDR_TYPE_ANY);
-    if (m_pcb == nullptr) 
-    {
-        TRACE <<"failed to create PCB";
-        return false;
-    }
+    m_tlsConfig = altcp_tls_create_config_client(NULL, 0);
+    MAKE_TRAMPOLINE(Weather, tlsAlloc, userPtrAtBegin);
+    m_tlsAllocator.alloc = tlsAlloc;
+    m_tlsAllocator.arg = this;
 
-    // Install callback for receiving UDP messages from the NTP server
-    MAKE_TRAMPOLINE(Weather, onMsgReceived, userPtrAtBegin);
-    udp_recv(m_pcb, onMsgReceived, this);
+    // TODO: add a destructor that releases m_tlsConfig
+
+    // Install callback for receiving https messages from the OpenWeatherMap server
+    MAKE_TRAMPOLINE(Weather, onTransferComplete, userPtrAtBegin);
+
 
     return true;
 }
 
 Weather::~Weather()
 {
-    udp_remove(m_pcb);
+    // Todo:  Clean up the tls allocator, and any receive buffers associated with client
+    
+    //udp_remove(m_pcb);
 }
+
 
 void Weather::startRequest()
 {
-    // Set alarm in case http requests are lost
-    MAKE_TRAMPOLINE(Weather, onWxFailed, userPtrAtEnd);
-    m_timeoutAlarm = add_alarm_in_ms(WX_TIMEOUT_MS, onWxFailed, this, true);
+    TRACE << "We made it to Weather::Start\n ";
+    m_content.clear();
+    m_complete = false;
+    MAKE_TRAMPOLINE(Weather, onTransferComplete, userPtrAtBegin);
+    m_settings.result_fn = onTransferComplete;
+    m_settings.altcp_allocator = &m_tlsAllocator;
+    MAKE_TRAMPOLINE(Weather, receive, userPtrAtBegin);
+    httpc_get_file_dns(
+        "api.openweathermap.org",  // server_name,
+        443,       // port,
+        OPEN_WEATHER_MAP_URL,
+//        "/data/2.5/weather?zip=20141,us&appid=SuperSecretKey&units=imperial",
+        &m_settings,  // settings,
+        receive,  // altcp_recv_fn recv_fn,
+        this,  // callback_arg,
+        nullptr); // connection)
+}
+bool Weather::isComplete() const
+{
+    //std::cout << "In HttpRequest::isComplete \n";
+    return m_complete;
+}
+std::string Weather::content() const
+{
+    TRACE << "In Weather::content\n";
+    return m_content;
+}
+altcp_pcb *Weather::tlsAlloc(u8_t ip_type)
+{
+    TRACE << "In Weather::tlsAlloc\n";
+    return altcp_tls_alloc(m_tlsConfig, ip_type);
+}
+void Weather::onTransferComplete(
+    httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err)
+{
+    TRACE << "In Weather::onTransferComplete\n";
+    m_complete = true;
+}
+err_t Weather::receive(struct altcp_pcb *conn, struct pbuf *p, err_t err)
+{
+    TRACE << "In Weather::receive\n";
+    TRACE << "Received" <<p->len <<"bytes";
+    m_content += std::string(static_cast<char *>(p->payload), p->len);
+    json += std::string(static_cast<char *>(p->payload), p->len);
+  
+    if (p->len < 400)
+        return ERR_OK;
 
-    sendWxRequest(); // DNS result was cached, proceed with the NTP request
+    Clock::WxInfo info2;
+    //clock().wxInfo(info2);
+
+    tempstr2 = Weather::extractStr(json, "description");
+    info2.conditions = tempstr2;
+    std::cout <<"conditions: " <<tempstr2  <<std::endl;
+//    std::cout <<"conditions: " <<HttpRequest::extractStr(json, "description") <<std::endl;
+    tempstr2 = Weather::extract(json, "temp");
+    info2.ctemp = std::stof(tempstr2);
+    std::cout <<"ctemp: " <<tempstr2 <<std::endl;
+//    std::cout <<"ctemp: " <<HttpRequest::extract(json, "temp") <<std::endl;
+    tempstr2 = Weather::extract(json, "pressure");
+    info2.pressure = std::stoi(tempstr2);
+    std::cout <<"pressure: " <<tempstr2 <<std::endl;
+//    std::cout <<"pressure: " <<HttpRequest::extract(json, "pressure") <<std::endl;
+    tempstr2 = Weather::extract(json, "humidity");
+    info2.humidity = std::stoi(tempstr2);
+    std::cout <<"humidity: " <<tempstr2 <<std::endl;
+//    std::cout <<"humidity: " <<HttpRequest::extract(json, "humidity") <<std::endl;
+    tempstr2 = Weather::extract(json, "speed");
+    info2.windSpeed = std::stof(tempstr2);
+    std::cout <<"windSpeed: " <<tempstr2 <<std::endl;       
+//    std::cout <<"windSpeed: " <<HttpRequest::extract(json, "speed") <<std::endl;
+    tempstr2 = Weather::extract(json, "deg");
+    info2.windDegree = std::stoi(tempstr2);
+    tempInt = std::stoi(tempstr2);
+    std::cout <<"windDegree: " <<tempstr2 <<std::endl;
+//    std::cout <<"windDegree: " <<HttpRequest::extract(json, "deg") <<std::endl;
+    tempstr2 = "BAD";
+    tempstr2 = Weather::getCardinal(tempInt);
+    info2.windCardinal = tempstr2;
+    std::cout <<"windCardinal: " <<tempstr2 <<std::endl;
+    // calculate and display windCardinal
+    tempstr2 = Weather::extract(json, "sunrise");
+    info2.sunRise = std::stoull(tempstr2);
+    std::cout <<"sunRise: " <<tempstr2 <<std::endl;
+//    std::cout <<"sunRise: " <<HttpRequest::extract(json, "sunrise") <<std::endl;
+    tempstr2 = Weather::extract(json, "sunset");
+    info2.sunSet = std::stoull(tempstr2);
+    std::cout <<"sunSet: " <<tempstr2 <<std::endl;
+//    std::cout <<"sunSet: " <<HttpRequest::extract(json, "sunset") <<std::endl;
+    tempstr2 =Weather::extract(json, "timezone");
+    info2.wxTimezone = std::stoull(tempstr2);
+    std::cout <<"wxTimeZone: " <<tempstr2 <<std::endl;
+//    std::cout <<"wxTimeZone: " <<HttpRequest::extract(json, "timezone") <<std::endl;
+    tempstr2 = Weather::extractStr(json, "name");
+    info2.cityName = tempstr2;
+    std::cout <<"cityName: " <<tempstr2 <<std::endl;
+//    std::cout <<"cityName: " <<HttpRequest::extractStr(json, "name") <<std::endl;
+    tempstr2 = Weather::extract(json, "dt");
+    info2.wxDateTime = std::stoull(tempstr2);
+    std::cout <<"wxDateTime: " <<tempstr2 <<std::endl;
+//    std::cout <<"wxDateTime: " <<HttpRequest::extract(json, "dt") <<std::endl;
+
+    //clock().logWeather(info2);
+
+    return ERR_OK;
   
 }
-
-
-void Weather::sendWxRequest() 
-{
-
-    m_state = WaitingForResponse;
-
-//    EXAMPLE_HTTP_REQUEST_T req3 = {0};
-//    req3.hostname = "api.openweathermap.org";
-//    req3.url = "/data/2.5/weather?zip=20141,us&appid=SuperSecretKey&units=imperial";
-//    req3.headers_fn = http_client_header_print_fn;
-//    req3.recv_fn = http_client_receive_print_fn;
-// Problems start here
-//    req3.tls_config = altcp_tls_create_config_client(NULL, 0); // https
-printf("Beginning my Weather HTTPs Request\n");    
-//    int result = http_client_request_sync(cyw43_arch_async_context(), &req3);
-printf("\nResult of my Weather HTTPs Request:  ");
-
-}
-
-void Weather::onMsgReceived(struct udp_pcb *pcb, struct pbuf *p, const ip_addr_t *addr, u16_t port) 
-{
-
-//  Potential Command to save buffer to json string
-// json += std::string((char *)p->payload, p->len);
-
-    uint8_t mode = pbuf_get_at(p, 0) & 0x7;
-    uint8_t stratum = pbuf_get_at(p, 1);
-
-    // Check the result
-    if (ip_addr_cmp(addr, &m_serverAddress) && 
-        port == WX_PORT && 
-        p->tot_len == WX_MSG_LEN &&
-        mode == 0x4 && 
-        stratum != 0) 
-    {
-        uint8_t timestampBuf[8] = {0};
-        pbuf_copy_partial(p, timestampBuf, sizeof(timestampBuf), 40);
-        uint32_t secondsSince1900 = fromBigEndian(timestampBuf);
-        uint32_t ms = fromBigEndian(timestampBuf + 4) / 4294967;
-        
-        // Substract the number of seconds between 1 Jan 1900 and 1 Jan 1970.
-        time_t secondsSince1970 = secondsSince1900 - 2208988800;
-        
-        m_state = Done;
-
-        if (m_timeCallback)
-            m_timeCallback(secondsSince1970, ms);
-    } 
-    else 
-    {
-        TRACE <<"invalid ntp response";
-        m_state = InvalidResponse;
-    
-        if (m_failCallback)
-            m_failCallback(InvalidResponse);
-    }
-    pbuf_free(p);
-
-    if (m_timeoutAlarm != -1) 
-    {
-        cancel_alarm(m_timeoutAlarm);
-        m_timeoutAlarm = -1;
-    }
-}
-
-// Callback for add_alarm_in_ms
-int64_t Weather::onWxFailed(alarm_id_t id)
-{
-    m_timeoutAlarm = -1;
-    TRACE <<"Wx request failed";
-    m_state = Timeout;
-    
-    if (m_failCallback)
-        m_failCallback(Timeout);
-    
-    return 0;
-}
-
 //  The following is from Arnaud's email
 
-std::string extract(const std::string &json, const std::string &name)
+std::string Weather::extract(const std::string &json, const std::string &name)
 {
     std::string prefix = "\"" + name + "\":";
     auto prefixPos = json.find(prefix);
@@ -148,80 +165,41 @@ std::string extract(const std::string &json, const std::string &name)
     {
         auto beginPos = prefixPos + prefix.size();
         auto endPos = json.find(",", beginPos);
+        auto endPosbrace = json.find("}", beginPos);
+        if (endPosbrace != std::string::npos && endPos > endPosbrace)
+        { 
+            endPos = endPosbrace;
+        }
         return json.substr(beginPos, endPos - beginPos);
     } else
         return "";
 }
 
-std::string extractStr(const std::string &json, const std::string &name)
+std::string Weather::extractStr(const std::string &json, const std::string &name)
 {
     std::string value = extract(json, name);
     return value.substr(1, value.size() - 2);
 }
 
-int ExtractDataFromJson()   // extract the weather fields from the received json string. 
+std::string Weather::getCardinal(int degrees) const   // This is currently a lot to do each second.  If it is done on sync, not so much kdkWx
 {
-// json += std::string((char *)p->payload, p->len);  This will be in the onMessageReceived    
-    std::string json = R"({"coord":{"lon":-77.7802,"lat":39.1164},"weather":[{"id":800,"main":"Clear","description":"clear sky","icon":"01d"}],"base":"stations","main":{"temp":19.18,"feels_like":6.94,"temp_min":15.21,"temp_max":22.23,"pressure":1022,"humidity":61,"sea_level":1022,"grnd_level":999},"visibility":10000,"wind":{"speed":11.5,"deg":320,"gust":16.11},"clouds":{"all":0},"dt":1736517544,"sys":{"type":2,"id":2003615,"country":"US","sunrise":1736512199,"sunset":1736546826},"timezone":-18000,"id":0,"name":"Round Hill","cod":200})";
 
-    std::cout <<"conditions: " <<extractStr(json, "description") <<std::endl;
-    std::cout <<"ctemp: " <<extract(json, "temp") <<std::endl;
-    std::cout <<"pressure: " <<extract(json, "pressure") <<std::endl;
-    std::cout <<"humidity: " <<extract(json, "humidity") <<std::endl;        
-    std::cout <<"windSpeed: " <<extract(json, "speed") <<std::endl;
-    std::cout <<"windDegree: " <<extract(json, "deg") <<std::endl;
-    // calculate and display windCardinal
-    std::cout <<"sunRise: " <<extract(json, "sunrise") <<std::endl;
-    std::cout <<"sunSet: " <<extract(json, "sunset") <<std::endl;
-    std::cout <<"wxTimeZone: " <<extract(json, "timezone") <<std::endl;
-    std::cout <<"cityName: " <<extractStr(json, "name") <<std::endl;
-    std::cout <<"wxDateTime: " <<extract(json, "dt") <<std::endl;
-// TRACE <<"Temperature:" <<extract(json, "temp") <<std::endl;
+    if (degrees < 11) return "N";
+    if (degrees < 34) return "NNE";
+    if (degrees < 56) return "NE";
+    if (degrees < 79) return "ENE";
+    if (degrees < 101) return "E";
+    if (degrees < 123) return "ESE";
+    if (degrees < 146) return "SE";
+    if (degrees < 169) return "SSE";
+    if (degrees < 191) return "S";
+    if (degrees < 214) return "SSW";
+    if (degrees < 236) return "SW";
+    if (degrees < 259) return "WSW";
+    if (degrees < 282) return "W";
+    if (degrees < 304) return "WNW";
+    if (degrees < 327) return "NW";
+    if (degrees < 349) return "NNW";
+    return "N";
 
-//    m_wxInfo.conditions = info.conditions;                    // kdkWx
-//    m_wxInfo.ctemp = info.ctemp;                              // kdkWx
-//    m_wxInfo.pressure = info.pressure;                        // kdkWx
-//    m_wxInfo.humidity = info.humidity;                        // kdkWx
-//    m_wxInfo.windSpeed = info.WindSpeed;                      // kdkWx
-//    m_wxInfo.windDegree = info.windDegree;                    // kdkWx
-//    m_wxInfo.windCardinal = info.Cardinal;                    // kdkWx
-//    m_wxInfo.sunRise = info.sunRise;                          // kdkWx
-//    m_wxInfo.sunSet = info.sunSet;                            // kdkWx
-//    m_wxInfo.wxTimezone = info.wxTimezone;                    // kdkWx
-//    m_wxInfo.cityName = info.cityName;                        // kdkWx
-//    m_wxInfo.wxDateTime = info.DateTime;                      // kdkWx           
-
-    return 0;
 }
-
-//std::string Weather::getCardinal(int degrees) const   // This is currently a lot to do each second.  If it is done on sync, not so much kdkWx
-//{
-//    if (degrees < 22) return "N";
-//    if (degrees < 67) return "NE";
-//    if (degrees < 113) return "E";
-//    if (degrees < 158) return "SE";
-//    if (degrees < 202) return "S";
-//    if (degrees < 248) return "SW";
-//    if (degrees < 293) return "W";
-//    if (degrees < 338) return "NW";
-//    return "N";
-
-//    if (degrees < 11) return "N";
-//    if (degrees < 34) return "NNE";
-//    if (degrees < 56) return "NE";
-//    if (degrees < 79) return "ENE";
-//    if (degrees < 101) return "E";
-//    if (degrees < 123) return "ESE";
-//    if (degrees < 146) return "SE";
-//    if (degrees < 169) return "SSE";
-//    if (degrees < 191) return "S";
-//    if (degrees < 214) return "SSW";
-//    if (degrees < 236) return "SW";
-//    if (degrees < 259) return "WSW";
-//    if (degrees < 282) return "W";
-//    if (degrees < 304) return "WNW";
-//    if (degrees < 327) return "NW";
-//    if (degrees < 349) return "NNW";
-//    return "N";
-
-//}

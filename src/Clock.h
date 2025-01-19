@@ -4,6 +4,7 @@
 #include "PicoClockHw/Gps.h"
 #include "PicoClockHw/Rtc.h"
 #include "PicoClockHw/Ntp.h"
+#include "PicoClockHw/Weather.h"                // kdkWx
 #include "Settings.h"
 #include "Utils/CyclicCounter.h"
 
@@ -98,7 +99,8 @@ public:
     void syncNow();
     void syncWxNow();                                               // kdkWx
     void syncInfo(SyncInfo &info);
-    void wxInfo(WxInfo &info);                                      //kdkWx
+    void wxInfo(WxInfo &info);                                      // kdkWx
+    void logWeather(Clock::WxInfo &info);                           // kdkWx
 
 private:
     struct Time
@@ -133,8 +135,6 @@ private:
     void setTmFromTime();
     void setFromRtcTime(tm tm);
     void logSync(Settings::SyncSource source, int driftMs);
-    void logWeather(Clock::WxInfo &info); 
-    //  void logWeather(WxInfo);                    // kdkWx We will need one to update the weather info structure above.   
     tm startRtcSync();
     void startNtpSync();
     void startGpsSync();
@@ -162,6 +162,7 @@ private:
 
     std::unique_ptr<Rtc> m_rtc; // As unique_ptr so that it can be easily disabled
     std::unique_ptr<Ntp> m_ntp;
+    std::unique_ptr<Weather> m_wx;                  // kdkWx
     Gps m_gps;
     RtcSync m_rtcSync = SyncingFromRtc;
     int m_lastRtcSec;
