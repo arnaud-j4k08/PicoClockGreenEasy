@@ -29,6 +29,7 @@ add_executable( ${PROJECT_NAME}
                 src/fonts.cpp
                 src/Settings.cpp
                 src/UiTexts.cpp
+                src/Weather.cpp
 
                 src/Functions/AbstractFunction.cpp
                 src/Functions/Alarm.cpp
@@ -88,6 +89,7 @@ if (PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PI
         # Ignore warnings from lwip code
         set_source_files_properties(
                 ${PICO_LWIP_PATH}/src/apps/altcp_tls/altcp_tls_mbedtls.c
+                ${PICO_LWIP_PATH}/src/apps/altcp_tls/altcp_proxyconnect.c
                 PROPERTIES
                 COMPILE_OPTIONS "-Wno-unused-result"
                 )                

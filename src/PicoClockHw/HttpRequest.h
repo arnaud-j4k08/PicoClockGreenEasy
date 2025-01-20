@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <functional>
 
 #include "lwip/altcp_tls.h"
 #include "lwip/apps/http_client.h"
@@ -9,7 +10,8 @@ class HttpRequest
 {
 public:
     HttpRequest();
-    void start();
+    void setOnCompleteCallback(std::function<void(std::string)> callback);
+    void start(const std::string &serverName, uint16_t port, const std::string &uri);
     bool isComplete() const;
     std::string content() const;
 
@@ -23,6 +25,7 @@ private:
     httpc_connection_t m_settings = {};
     altcp_allocator_t m_tlsAllocator = {};
 
+    std::function<void(std::string)> m_onCompleteCallback;
     std::string m_content;
     bool m_complete = false;
 };
