@@ -48,7 +48,7 @@ Weather::~Weather()
 
 void Weather::startRequest()
 {
-    TRACE << "We made it to Weather::Start\n ";
+    TRACE << "We made it to Weather startRequest\n ";
     m_content.clear();
     m_complete = false;
     MAKE_TRAMPOLINE(Weather, onTransferComplete, userPtrAtBegin);

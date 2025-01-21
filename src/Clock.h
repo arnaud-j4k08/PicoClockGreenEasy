@@ -7,6 +7,7 @@
 #include "PicoClockHw/Weather.h"                // kdkWx
 #include "Settings.h"
 #include "Utils/CyclicCounter.h"
+#include "PicoClockHw/HttpRequest.h"            // kdkWx
 
 #include <memory>
 #include <time.h>
@@ -174,6 +175,9 @@ private:
     DaylightSavingTime m_dst;
     time_t m_time = 0; // Current time as unix time, local (not UTC), not considering DST
     tm m_tm = {}; // Current time as tm, considering DST
+
+    HttpRequest m_httpReq;                                  // kdkWx
+    void onRequestComplete(const std::string &content);     // kdkWx
 
     bool m_clockAdjusted = true;
 };

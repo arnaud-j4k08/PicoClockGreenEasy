@@ -2,6 +2,7 @@
 #include "Utils/Trace.h"
 #include "PicoClockHw/Wifi.h"
 #include "PicoClockHw/Platform.h"
+#include <functional>
 
 Clock::Clock(int tickPerSec, Settings &settings) : 
     m_tickCount(tickPerSec), 
@@ -35,6 +36,9 @@ Clock::Clock(int tickPerSec, Settings &settings) :
     // initialized.
     // kdkWx.  Weather will need to be later as well, as it depends on Wi-Fi.  
     using namespace std::placeholders;
+    TRACE << "In Clock Clock, calling setOnCompleteCallback \n";
+    m_httpReq.setOnCompleteCallback(std::bind(&Clock::onRequestComplete, this, _1));
+    TRACE << "In Clock Clock, after calling setOnCompleteCallback \n";
     m_gps.setTimeCallback(
         std::bind(&Clock::onExternalTimeReceived, this, _1, _2, Settings::SyncSource::Gps));
     m_gps.setTimeoutCallback([this]()
@@ -64,7 +68,7 @@ void Clock::onWifiInited()
         m_ntp.release();
     // Todo.  kdkWx We will want to start Weather Sync here, if m_wx->init()   Ntp.cpp has an init function.  Create a copy of Ntp.cpp and call it Weather.cpp
     // For now, lets do the init, but not call the sync.  We will do the sync through SyncWxNow.cpp.
-    m_wx->init();
+     m_wx->init();
     // startWxSync();    // kdkWx    
 }
 
@@ -154,13 +158,23 @@ void Clock::startWxSync()                                                       
         TRACE << "Already connected";                                           // kdkWx  
         if (m_wx)                                                               // kdkWx  was m_ntp  
         { 
-            TRACE << "Should be calling startRequest";                          // kdkWx  
-            m_wx->startRequest();                                               // kdkWx      
+        //  TRACE << "Should be calling startRequest";
+        TRACE << "In Clock startWxSync, calling m_httpReq start \n";                              // kdkWx  
+            m_httpReq.start("api.openweathermap.org", 443, OPEN_WEATHER_MAP_URL); 
+        TRACE << "In Clock startWxSync, after calling m_httpReq start \n";                                                    // kdkWx      
         //    m_extSync = WxInProgress;
+        //    m_wx->startRequest();
             m_extSync = Inactive;     // Haven't figured where to clear it.     // kdkWx        HttpRequest has a start function.   
         }                                                                     // kdkWx  
     }                                                                           // kdkWx  
 }                                                                               // kdkWx  
+
+
+void Clock::onRequestComplete(const std::string &content)
+{
+    TRACE << "In Clock onRequestComplete: \n";
+    std::cout << m_httpReq.content() <<std::endl;
+}
 
 void Clock::startGpsSync()
 {
@@ -293,10 +307,13 @@ void Clock::monitorWifiConnection()
                 break;                                                              // kdkWx
             case Wifi::Connected:                                                   // kdkWx
               if (m_wx)                                                           // kdkWx
-                {                                                                 // kdkWx
-                    TRACE << "Wifi connected, start Weather request";             // kdkWx
-                    m_wx->startRequest();                                         // kdkWx
-                    TRACE << "Weather Request started";                           // kdkWx
+                {  
+                 TRACE << "In Clock monitorWifiConnection, calling m_httpReq start \n";                                                                   // kdkWx
+                //    TRACE << "Wifi connected, start Weather request";             // kdkWx
+                //    m_wx->startRequest();
+                      m_httpReq.start("api.openweathermap.org", 443, OPEN_WEATHER_MAP_URL); 
+                    TRACE << "In Clock monitorWifiConnection, after calling m_httpReq start \n";                                           // kdkWx
+                //    TRACE << "Weather Request started";                           // kdkWx
                 //    m_extSync = WxInProgress;
                     m_extSync = Inactive;                                     // kdkWx  Until we can do this cleanly
                 } else                                                            // kdkWx

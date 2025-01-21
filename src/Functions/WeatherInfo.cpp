@@ -65,7 +65,8 @@ void WeatherInfo::renderFrame(
             break; 
         case WxWindDirection:
             text = 
-                uiText(TextId::WindDir) + getCardinal(info.windDegree) + " (" + std::to_string(info.windDegree) + ")";
+//              uiText(TextId::WindDir) + getCardinal(info.windDegree) + " (" + std::to_string(info.windDegree) + ")";
+                uiText(TextId::WindDir) + info.windCardinal + " (" + std::to_string(info.windDegree) + ")";
 //                std::to_string(info.windSpeed);
             break;          
         case WxSunrise:   

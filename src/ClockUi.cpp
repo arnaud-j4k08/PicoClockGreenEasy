@@ -107,7 +107,7 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
     wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunrise);          // kdkWx
     wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunset);           // kdkWx
     wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxDateTime);         // kdkWx
-    wxSubmenu->addFunction<SyncWxNow>(this);                                    // kdkWx
+    wxSubmenu->addFunction<Action>(this, uiText(TextId::SyncWxNow), std::bind(&Clock::syncWxNow, &m_clock));
 
     // Remember the last used time function in case auto scroll is enabled.
     if (m_currentMenu->at(m_curFuncIdx)->isTimeFunction())

@@ -4,6 +4,7 @@
 #include "PicoClockHw/HttpRequest.h"
 #include "PicoClockHw/Platform.h"
 #include "PicoClockHw/Wifi.h"
+#include "Weather2.h"
 
 int main() 
 {
@@ -27,9 +28,10 @@ int main()
 
     // TODO: Remove this, this is only for testing. Wait until the Wifi connection initiated in
     // Clock is completed.
-    //while (Wifi::linkStatus() != Wifi::Connected)
-    //    ;
-    //TRACE << "Connected!\n";
+    TRACE << "Connected to Wifi\n";
+    while (Wifi::linkStatus() != Wifi::Connected)
+        ;
+    TRACE << "Connected!\n";
     
     // TODO: Only for testing. Perform the request and output the result.
     //TRACE << "Creating HttpRequest object called req \n";
@@ -39,6 +41,14 @@ int main()
     //while (!req.isComplete())
     //    ;
     //std::cout << "HTTP request result: " << req.content() <<std::endl;
+
+        // TODO: declared here only for testing
+    TRACE << "In Main, calling Weather2 weather2\n";    
+    Weather2 weather2;  // sets callback 
+    TRACE << "In Main, after Weather2 weather2, calling sync\n";
+    weather2.sync();
+    TRACE << "In Main, After weather2 sync\n";
+
 
     TRACE <<"Start the loop\n";
     Platform::runMainLoop();
