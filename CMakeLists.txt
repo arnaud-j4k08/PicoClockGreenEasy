@@ -46,7 +46,7 @@ add_executable( ${PROJECT_NAME}
                 src/fonts.cpp
                 src/Settings.cpp
                 src/UiTexts.cpp
-                src/Weather2.cpp
+
 
                 src/Functions/AbstractFunction.cpp
                 src/Functions/Alarm.cpp
@@ -59,7 +59,6 @@ add_executable( ${PROJECT_NAME}
                 src/Functions/Submenu.cpp
                 src/Functions/SyncInfo.cpp
                 src/Functions/SyncNow.cpp
-                src/Functions/SyncWxNow.cpp
                 src/Functions/SyncSource.cpp
                 src/Functions/Temperature.cpp
                 src/Functions/Time.cpp
@@ -74,7 +73,6 @@ add_executable( ${PROJECT_NAME}
                 src/PicoClockHw/HttpRequest.cpp
                 src/PicoClockHw/Platform.cpp
                 src/PicoClockHw/Rtc.cpp
-                src/PicoClockHw/Weather.cpp
 )
 
 target_link_libraries(  ${PROJECT_NAME} 

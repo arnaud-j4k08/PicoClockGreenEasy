@@ -8,8 +8,8 @@ Clock::Clock(int tickPerSec, Settings &settings) :
     m_tickCount(tickPerSec), 
     m_settings(settings),
     m_rtc(std::make_unique<Rtc>()),
-    m_ntp(std::make_unique<Ntp>()),
-    m_wx(std::make_unique<Weather>())
+    m_ntp(std::make_unique<Ntp>())
+//    m_wx(std::make_unique<Weather>())     // kdkWx Remove after HttpRequest works
     // Todo kdkWx  I think that we will need a make_unique for Weather class.  Note that there isn't one for GPS.  Probably m_wx
 {
     // Initialize m_time and m_tm from the RTC. It will be used for displaying time 
@@ -36,9 +36,9 @@ Clock::Clock(int tickPerSec, Settings &settings) :
     // initialized.
     // kdkWx.  Weather will need to be later as well, as it depends on Wi-Fi.  
     using namespace std::placeholders;
-    TRACE << "In Clock Clock, calling setOnCompleteCallback \n";
-    m_httpReq.setOnCompleteCallback(std::bind(&Clock::onRequestComplete, this, _1));
-    TRACE << "In Clock Clock, after calling setOnCompleteCallback \n";
+    TRACE << "In Clock Clock, calling setOnCompleteCallback \n";                                // kdkWx
+    m_httpReq.setOnCompleteCallback(std::bind(&Clock::onRequestComplete, this, _1));            // kdkWx
+    TRACE << "In Clock Clock, after calling setOnCompleteCallback \n";                          // kdkWx
     m_gps.setTimeCallback(
         std::bind(&Clock::onExternalTimeReceived, this, _1, _2, Settings::SyncSource::Gps));
     m_gps.setTimeoutCallback([this]()
@@ -68,8 +68,8 @@ void Clock::onWifiInited()
         m_ntp.release();
     // Todo.  kdkWx We will want to start Weather Sync here, if m_wx->init()   Ntp.cpp has an init function.  Create a copy of Ntp.cpp and call it Weather.cpp
     // For now, lets do the init, but not call the sync.  We will do the sync through SyncWxNow.cpp.
-     m_wx->init();
-    // startWxSync();    // kdkWx    
+    // m_wx->init();          // kdkWx Both of these will go away once HttpRequest is working.  
+    // startWxSync();       // kdkWx    
 }
 
 void Clock::syncNow()
@@ -95,16 +95,15 @@ void Clock::syncNow()
 }
 
 void Clock::syncWxNow()                                     // kdkWx  Little stub, but mimics NTP syncing
-{ 
-    TRACE << "Made it to syncWxNow";                                                           // kdkWx
+{                                                           // kdkWx
+    TRACE << "Made it to syncWxNow";                        // kdkWx
     if (isSynchronizing())                                  // kdkWx  Checks for SyncingFromRTC or ExternalSync not inactive
     {                                                       // kdkWx
         TRACE << "Synchronization already in progress";     // kdkWx  
         return;                                             // kdkWx
     }                                                       // kdkWx
-        TRACE << "Past Check for Synchronizing";                                                                // kdkWx
+        TRACE << "Past Check for Synchronizing";            // kdkWx
     startWxSync();                                          // kdkWx
-                                                            // kdkWx
 }                                                           // kdkWx
                                                             // kdkWx
 tm Clock::startRtcSync()
@@ -142,7 +141,7 @@ void Clock::startNtpSync()
     }
 }
 
-void Clock::startWxSync()                                                       // kdkWx  
+void Clock::startWxSync()                                                       // kdkWx  This is also called from ClockUi submenu
 {                                                                               // kdkWx  
     TRACE << "startWxsync";                                                     // kdkWx  
     auto status = Wifi::linkStatus();                                           // kdkWx  
@@ -156,24 +155,126 @@ void Clock::startWxSync()                                                       
     } else                                                                      // kdkWx  
     {                                                                           // kdkWx  
         TRACE << "Already connected";                                           // kdkWx  
-        if (m_wx)                                                               // kdkWx  was m_ntp  
-        { 
-        //  TRACE << "Should be calling startRequest";
-        TRACE << "In Clock startWxSync, calling m_httpReq start \n";                              // kdkWx  
+        if (m_wx)                                                               // kdkWx  was uniqueptr, now boolean.  Are we doing Weather?  
+        {                                                                       // kdkWx 
+        TRACE << "In Clock startWxSync, calling m_httpReq start \n";            // kdkWx  
             m_httpReq.start("api.openweathermap.org", 443, OPEN_WEATHER_MAP_URL); 
-        TRACE << "In Clock startWxSync, after calling m_httpReq start \n";                                                    // kdkWx      
-        //    m_extSync = WxInProgress;
-        //    m_wx->startRequest();
-            m_extSync = Inactive;     // Haven't figured where to clear it.     // kdkWx        HttpRequest has a start function.   
-        }                                                                     // kdkWx  
+        TRACE << "In Clock startWxSync, after calling m_httpReq start \n";      // kdkWx      
+            m_extSync = WxInProgress;                                           // kdkWx Update sync in progress for other processes
+        //    m_wx->startRequest();                                             // kdkWx Delete when HttpRequest works
+        }                                                                       // kdkWx  
     }                                                                           // kdkWx  
 }                                                                               // kdkWx  
 
 
-void Clock::onRequestComplete(const std::string &content)
+void Clock::onRequestComplete(const std::string &content)                       // kdkWx Entire section moved from Weather.cpp
 {
     TRACE << "In Clock onRequestComplete: \n";
     std::cout << m_httpReq.content() <<std::endl;
+    // json += m_httpReq.content(); // kdkWx don't know why we need to append to the string, instead of assign
+    json = m_httpReq.content();
+    m_extSync = Inactive;           // allow new synchronizations
+    if (json.size() < 400)
+        return;
+
+    tempstr2 = Clock::extractStr(json, "description");
+    m_wxInfo.conditions = tempstr2;
+    std::cout <<"conditions: " <<tempstr2  <<std::endl;
+//    std::cout <<"conditions: " <<HttpRequest::extractStr(json, "description") <<std::endl;
+    tempstr2 = Clock::extract(json, "temp");
+    m_wxInfo.ctemp = std::stof(tempstr2);
+    std::cout <<"ctemp: " <<tempstr2 <<std::endl;
+//    std::cout <<"ctemp: " <<HttpRequest::extract(json, "temp") <<std::endl;
+    tempstr2 = Clock::extract(json, "pressure");
+    m_wxInfo.pressure = std::stoi(tempstr2);
+    std::cout <<"pressure: " <<tempstr2 <<std::endl;
+//    std::cout <<"pressure: " <<HttpRequest::extract(json, "pressure") <<std::endl;
+    tempstr2 = Clock::extract(json, "humidity");
+    m_wxInfo.humidity = std::stoi(tempstr2);
+    std::cout <<"humidity: " <<tempstr2 <<std::endl;
+//    std::cout <<"humidity: " <<HttpRequest::extract(json, "humidity") <<std::endl;
+    tempstr2 = Clock::extract(json, "speed");
+    m_wxInfo.windSpeed = std::stof(tempstr2);
+    std::cout <<"windSpeed: " <<tempstr2 <<std::endl;       
+//    std::cout <<"windSpeed: " <<HttpRequest::extract(json, "speed") <<std::endl;
+    tempstr2 = Clock::extract(json, "deg");
+    m_wxInfo.windDegree = std::stoi(tempstr2);
+    tempInt = std::stoi(tempstr2);
+    std::cout <<"windDegree: " <<tempstr2 <<std::endl;
+//    std::cout <<"windDegree: " <<HttpRequest::extract(json, "deg") <<std::endl;
+    tempstr2 = "BAD";
+    tempstr2 = Clock::getCardinal(tempInt);
+    m_wxInfo.windCardinal = tempstr2;
+    std::cout <<"windCardinal: " <<tempstr2 <<std::endl;
+    // calculate and display windCardinal
+    tempstr2 = Clock::extract(json, "sunrise");
+    m_wxInfo.sunRise = std::stoull(tempstr2);
+    std::cout <<"sunRise: " <<tempstr2 <<std::endl;
+//    std::cout <<"sunRise: " <<HttpRequest::extract(json, "sunrise") <<std::endl;
+    tempstr2 = Clock::extract(json, "sunset");
+    m_wxInfo.sunSet = std::stoull(tempstr2);
+    std::cout <<"sunSet: " <<tempstr2 <<std::endl;
+//    std::cout <<"sunSet: " <<HttpRequest::extract(json, "sunset") <<std::endl;
+    tempstr2 =Clock::extract(json, "timezone");
+    m_wxInfo.wxTimezone = std::stoull(tempstr2);
+    std::cout <<"wxTimeZone: " <<tempstr2 <<std::endl;
+//    std::cout <<"wxTimeZone: " <<HttpRequest::extract(json, "timezone") <<std::endl;
+    tempstr2 = Clock::extractStr(json, "name");
+    m_wxInfo.cityName = tempstr2;
+    std::cout <<"cityName: " <<tempstr2 <<std::endl;
+//    std::cout <<"cityName: " <<HttpRequest::extractStr(json, "name") <<std::endl;
+    tempstr2 = Clock::extract(json, "dt");
+    m_wxInfo.wxDateTime = std::stoull(tempstr2);
+    std::cout <<"wxDateTime: " <<tempstr2 <<std::endl;
+//    std::cout <<"wxDateTime: " <<HttpRequest::extract(json, "dt") <<std::endl;
+
+}
+
+std::string Clock::extract(const std::string &json, const std::string &name)    // kdkWx Entire section moved from Weather.cpp
+{
+    std::string prefix = "\"" + name + "\":";
+    auto prefixPos = json.find(prefix);
+    if (prefixPos != std::string::npos)
+    {
+        auto beginPos = prefixPos + prefix.size();
+        auto endPos = json.find(",", beginPos);
+        auto endPosbrace = json.find("}", beginPos);
+        if (endPosbrace != std::string::npos && endPos > endPosbrace)
+        { 
+            endPos = endPosbrace;
+        }
+        return json.substr(beginPos, endPos - beginPos);
+    } else
+        return "";
+}
+
+std::string Clock::extractStr(const std::string &json, const std::string &name)   // kdkWx Entire section moved from Weather.cpp
+{
+    std::string value = extract(json, name);
+    return value.substr(1, value.size() - 2);
+}
+
+std::string Clock::getCardinal(int degrees) const                                 // kdkWx Entire section moved from Weather.cpp
+{
+
+    if (degrees < 11) return "N";
+    if (degrees < 34) return "NNE";
+    if (degrees < 56) return "NE";
+    if (degrees < 79) return "ENE";
+    if (degrees < 101) return "E";
+    if (degrees < 123) return "ESE";
+    if (degrees < 146) return "SE";
+    if (degrees < 169) return "SSE";
+    if (degrees < 191) return "S";
+    if (degrees < 214) return "SSW";
+    if (degrees < 236) return "SW";
+    if (degrees < 259) return "WSW";
+    if (degrees < 282) return "W";
+    if (degrees < 304) return "WNW";
+    if (degrees < 327) return "NW";
+    if (degrees < 349) return "NNW";
+    return "N";
+
 }
 
 void Clock::startGpsSync()
@@ -306,18 +407,17 @@ void Clock::monitorWifiConnection()
                 // Continue waiting for connection                                  // kdkWx
                 break;                                                              // kdkWx
             case Wifi::Connected:                                                   // kdkWx
-              if (m_wx)                                                           // kdkWx
-                {  
+              if (m_wx)                                                             // kdkWx  Was UniquePtr, may be boolean or removed
+                {                                                                   // kdkWx 
                  TRACE << "In Clock monitorWifiConnection, calling m_httpReq start \n";                                                                   // kdkWx
                 //    TRACE << "Wifi connected, start Weather request";             // kdkWx
                 //    m_wx->startRequest();
                       m_httpReq.start("api.openweathermap.org", 443, OPEN_WEATHER_MAP_URL); 
                     TRACE << "In Clock monitorWifiConnection, after calling m_httpReq start \n";                                           // kdkWx
                 //    TRACE << "Weather Request started";                           // kdkWx
-                //    m_extSync = WxInProgress;
-                    m_extSync = Inactive;                                     // kdkWx  Until we can do this cleanly
-                } else                                                            // kdkWx
-                    m_extSync = Inactive;                                         // kdkWx
+                      m_extSync = WxInProgress;
+                } else                                                              // kdkWx
+                    m_extSync = Inactive;                                           // kdkWx
                 break;                                                              // kdkWx     
             default:                                                                // kdkWx  
                 TRACE << "Connection failed";                                       // kdkWx  
@@ -411,7 +511,7 @@ void Clock::syncInfo(SyncInfo &info)
     info = m_syncInfo;
 }
 
-// We will need something like this for weather.  Probably belongs in Weather.cpp, after OpenWeatherMap api success    kdkWx
+// Superceded by onRequestComplete .  Probably Can Delete  kdkWx
 void Clock::logWeather(Clock::WxInfo &info)                   // kdkWx
 {                                                             // kdkWx
     m_wxInfo.conditions = info.conditions;                    // kdkWx
@@ -429,12 +529,12 @@ void Clock::logWeather(Clock::WxInfo &info)                   // kdkWx
 // or                                                           // kdkWx
 //    can we m_wxInfo = info  ?   is it just that easy?         // kdkWx
 //                                                              // kdkWx
-}                                                             // kdkWx
+}                                                               // kdkWx
 //                                                              // kdkWx
 //                                                              // kdkWx
-void Clock::wxInfo(WxInfo &info)                                // kdkWx
+void Clock::wxInfo(WxInfo &info)                                // kdkWx  Used by WeatherInfo.cpp
 {                                                               // kdkWx
-    info = m_wxInfo;                                            // kdkWx  m_wxInfo is a pointer to structure in Clock.h or Weather.h
+    info = m_wxInfo;                                            // kdkWx  m_wxInfo is a pointer to structure in Clock.h 
 }                                                               // kdkWx
 
 

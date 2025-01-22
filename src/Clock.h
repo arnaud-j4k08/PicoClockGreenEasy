@@ -4,7 +4,6 @@
 #include "PicoClockHw/Gps.h"
 #include "PicoClockHw/Rtc.h"
 #include "PicoClockHw/Ntp.h"
-#include "PicoClockHw/Weather.h"                // kdkWx
 #include "Settings.h"
 #include "Utils/CyclicCounter.h"
 #include "PicoClockHw/HttpRequest.h"            // kdkWx
@@ -98,10 +97,10 @@ public:
     }
 
     void syncNow();
-    void syncWxNow();                                               // kdkWx
+    void syncWxNow();                                               // kdkWx  Intermediate stub.  Mirrors NTP
     void syncInfo(SyncInfo &info);
-    void wxInfo(WxInfo &info);                                      // kdkWx
-    void logWeather(Clock::WxInfo &info);                           // kdkWx
+    void wxInfo(WxInfo &info);                                      // kdkWx  Used by WeatherInfo
+    void logWeather(Clock::WxInfo &info);                           // kdkWx  Can probably delete
 
 private:
     struct Time
@@ -139,7 +138,8 @@ private:
     tm startRtcSync();
     void startNtpSync();
     void startGpsSync();
-    void startWxSync();                             // kdkWx We will need this once we start updating every 15min or 30 minutes
+    void startWxSync();                             // kdkWx need this once we start updating every 15min or 30 minutes
+                                                    // kdkWx Also part of Weather subMenu Action bind in ClockUi
 
     enum RtcSync
     {
@@ -163,21 +163,27 @@ private:
 
     std::unique_ptr<Rtc> m_rtc; // As unique_ptr so that it can be easily disabled
     std::unique_ptr<Ntp> m_ntp;
-    std::unique_ptr<Weather> m_wx;                  // kdkWx
+    //std::unique_ptr<Weather> m_wx;                  // kdkWx  Can probably delete, as Weather class goes away, or change to boolean
     Gps m_gps;
     RtcSync m_rtcSync = SyncingFromRtc;
     int m_lastRtcSec;
     ExternalSync m_extSync = Inactive;
 
     SyncInfo m_syncInfo;
-    WxInfo m_wxInfo;                                                    // kdkWx  Points to our Weather structure above
-
+    WxInfo m_wxInfo;                                                         // kdkWx  pointer to WxInfo stucture
+    std::string tempstr2;                                                    // kdkWx  
+    int tempInt = 0;                                                         // kdkWx
+    std::string json;                                                        // kdkWx   
     DaylightSavingTime m_dst;
     time_t m_time = 0; // Current time as unix time, local (not UTC), not considering DST
     tm m_tm = {}; // Current time as tm, considering DST
 
-    HttpRequest m_httpReq;                                  // kdkWx
-    void onRequestComplete(const std::string &content);     // kdkWx
+    HttpRequest m_httpReq;                                                  // kdkWx
+    void onRequestComplete(const std::string &content);                     // kdkWx
+    std::string extract(const std::string &json, const std::string &name);  // kdkWx
+    std::string extractStr(const std::string &json, const std::string &name); // kdkWx
+    std::string getCardinal(int degrees) const;                             // kdkWx   
 
     bool m_clockAdjusted = true;
+    bool m_wx = true;                                                     // kdkWx  Boolean to test execution of Weather functions
 };

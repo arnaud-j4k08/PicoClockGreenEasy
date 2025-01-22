@@ -4,7 +4,6 @@
 #include "PicoClockHw/HttpRequest.h"
 #include "PicoClockHw/Platform.h"
 #include "PicoClockHw/Wifi.h"
-#include "Weather2.h"
 
 int main() 
 {
@@ -43,11 +42,11 @@ int main()
     //std::cout << "HTTP request result: " << req.content() <<std::endl;
 
         // TODO: declared here only for testing
-    TRACE << "In Main, calling Weather2 weather2\n";    
-    Weather2 weather2;  // sets callback 
-    TRACE << "In Main, after Weather2 weather2, calling sync\n";
-    weather2.sync();
-    TRACE << "In Main, After weather2 sync\n";
+    //TRACE << "In Main, calling Weather2 weather2\n";    
+    //Weather2 weather2;  // sets callback 
+    //TRACE << "In Main, after Weather2 weather2, calling sync\n";
+    //weather2.sync();
+    //TRACE << "In Main, After weather2 sync\n";
 
 
     TRACE <<"Start the loop\n";
