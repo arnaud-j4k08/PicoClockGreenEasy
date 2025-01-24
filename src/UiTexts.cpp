@@ -65,6 +65,8 @@ namespace
             "RTC",
             "NTP",
             "GPS",
+
+            "Update Weather Now",
     };
 }
 

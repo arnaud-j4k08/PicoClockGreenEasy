@@ -74,6 +74,8 @@ enum class TextId
     Ntp,
     Gps,
 
+    UpdateWeatherNow,
+
     TextCount
 };
 

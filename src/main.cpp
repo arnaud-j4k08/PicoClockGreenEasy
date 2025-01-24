@@ -26,17 +26,6 @@ int main()
     if (Wifi::init())
         ui.onWifiInited();
 
-    // TODO: Remove this, this is only for testing. Wait until the Wifi connection initiated in
-    // Clock is completed.
-    TRACE << "Connected to wifi";
-    while (Wifi::linkStatus() != Wifi::Connected)
-        ;
-    TRACE << "Connected!";
-    
-    // TODO: declared here only for testing
-    Weather weather;
-    weather.sync();
-
     TRACE <<"Start the loop\n";
     Platform::runMainLoop();
 

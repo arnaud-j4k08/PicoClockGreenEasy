@@ -91,6 +91,8 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
     syncSubmenu->addFunction<SyncInfo>(this, SyncInfo::LastSyncDrift);
     syncSubmenu->addFunction<WifiStatus>(this);
 
+    addFunction<Action>(uiText(TextId::UpdateWeatherNow), std::bind(&Weather::sync, &m_weather));
+
     // Remember the last used time function in case auto scroll is enabled.
     if (m_currentMenu->at(m_curFuncIdx)->isTimeFunction())
         m_lastUsedTimeFunction = m_curFuncIdx;
@@ -480,7 +482,7 @@ void ClockUi::renderHorizScrollingText(
 
         if (editedValue.empty() || m_blinkingCounter < AbstractFunction::BLINKING_DISAPPEAR_FRAME)
         {
-            TRACE << "Draw the scrolling text:" << leftText + editedValue + rightText;
+//            TRACE << "Draw the scrolling text:" << leftText + editedValue + rightText;
             frame.drawText(-m_horizScrollPos, 0, leftText + editedValue + rightText);
         } else
         {

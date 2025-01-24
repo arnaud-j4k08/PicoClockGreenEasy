@@ -10,7 +10,8 @@ Weather::Weather()
 
 void Weather::sync()
 {
-    m_httpReq.start("www.google.com", 443, "/");
+    // TODO: connect to wifi if needed
+    m_httpReq.start("api.openweathermap.org", 443, OPEN_WEATHER_MAP_URL);
 }
 
 void Weather::onRequestComplete(const std::string &content)

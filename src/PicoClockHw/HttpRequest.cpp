@@ -5,15 +5,12 @@
 
 HttpRequest::HttpRequest()
 {
-    TRACE << "altcp_tls_create_config_client";
-    m_tlsConfig = altcp_tls_create_config_client(NULL, 0);
-    TRACE << "done";
+}
 
-    MAKE_TRAMPOLINE(HttpRequest, tlsAlloc, userPtrAtBegin);
-    m_tlsAllocator.alloc = tlsAlloc;
-    m_tlsAllocator.arg = this;
-
-    // TODO: add a destructor that releases m_tlsConfig
+HttpRequest::~HttpRequest()
+{
+    if (m_tlsConfig != nullptr)
+        altcp_tls_free_config(m_tlsConfig);
 }
 
 void HttpRequest::setOnCompleteCallback(std::function<void(std::string)> callback)
@@ -23,16 +20,32 @@ void HttpRequest::setOnCompleteCallback(std::function<void(std::string)> callbac
 
 void HttpRequest::start(const std::string &serverName, uint16_t port, const std::string &uri)
 {
+    // Initialize member variables to receive the result
     m_content.clear();
+    m_contentLen = -1;
     m_complete = false;
 
+    // Prepare TLS config
+    if (m_tlsConfig != nullptr)
+        altcp_tls_free_config(m_tlsConfig);
+    TRACE << "altcp_tls_create_config_client";
+    m_tlsConfig = altcp_tls_create_config_client(NULL, 0);
+    TRACE << "done, m_tlsConfig=" <<m_tlsConfig;
+
+    // Prepare TLS allocator
+    MAKE_TRAMPOLINE(HttpRequest, tlsAlloc, userPtrAtBegin);
+    m_tlsAllocator.alloc = tlsAlloc;
+    m_tlsAllocator.arg = this;
+
+    // Prepare settings
+    m_settings.headers_done_fn = onHeadersDoneProxy;
     MAKE_TRAMPOLINE(HttpRequest, onTransferComplete, userPtrAtBegin);
     m_settings.result_fn = onTransferComplete;
-
     m_settings.altcp_allocator = &m_tlsAllocator;
 
+    // Start the actual request
     MAKE_TRAMPOLINE(HttpRequest, receive, userPtrAtBegin);
-    httpc_get_file_dns(
+    err_t e = httpc_get_file_dns(
         serverName.c_str(),
         port,
         uri.c_str(),
@@ -40,6 +53,7 @@ void HttpRequest::start(const std::string &serverName, uint16_t port, const std:
         receive,    // altcp_recv_fn recv_fn,
         this,       // callback_arg,
         nullptr);   // connection)
+    TRACE << "httpc_get_file_dns returned" << static_cast<int>(e); 
 }
 
 bool HttpRequest::isComplete() const
@@ -57,23 +71,47 @@ altcp_pcb *HttpRequest::tlsAlloc(u8_t ip_type)
     return altcp_tls_alloc(m_tlsConfig, ip_type);
 }
 
+err_t HttpRequest::onHeadersDoneProxy(
+    httpc_state_t *connection, void *arg, struct pbuf *hdr, u16_t hdrLen, u32_t contentLen)
+{
+    return static_cast<HttpRequest *>(arg)->onHeadersDone(
+        connection, hdr, hdrLen, contentLen);
+}
+
+err_t HttpRequest::onHeadersDone(
+    httpc_state_t *connection, struct pbuf *hdr, u16_t hdrLen, u32_t contentLen)
+{
+    TRACE << "Content len:" << contentLen;
+    m_contentLen = contentLen;
+    
+    // Optionally dump the header. For api.openweathermap.org, it is equal to the content.
+    //TRACE << "Header:" << std::string(static_cast<char *>(hdr->payload), hdr->len);
+    
+    return ERR_OK;
+}
+
 err_t HttpRequest::receive(struct altcp_pcb *conn, struct pbuf *p, err_t err)
 {
-    TRACE << "Received" <<p->len <<"bytes";
     m_content += std::string(static_cast<char *>(p->payload), p->len);
+
+    TRACE << "Received block of" <<p->len <<"bytes";
+    TRACE << "err=" << static_cast<int>(err);
+    TRACE << "So far, we have" << m_content.size() << "bytes";
+
     return ERR_OK;
 }
 
 void HttpRequest::onTransferComplete(
     httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err)
 {
-    // TODO: check why this function is called only 14 seconds after the last received block of 
-    // bytes
-
-    TRACE << "onTransferComplete";
+    TRACE << "Content-Length of header:" << m_contentLen;
+    TRACE << "Received" << m_content.size() << "bytes in total";
+    TRACE << "httpc_result=" << httpc_result;
+    TRACE << "rx_content_len=" <<rx_content_len;
+    TRACE << "srv_res=" << srv_res;
+    TRACE << "err=" << static_cast<int>(err);
     m_complete = true;
 
     if (m_onCompleteCallback)
         m_onCompleteCallback(m_content);
 }
-
