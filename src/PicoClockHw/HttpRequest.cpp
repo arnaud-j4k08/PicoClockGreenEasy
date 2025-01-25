@@ -3,8 +3,22 @@
 #include "Utils/Trace.h"
 #include "Utils/Trampoline.h"
 
+// TODO: error handling in this whole class
+
 HttpRequest::HttpRequest()
 {
+    // Prepare TLS allocator
+    MAKE_TRAMPOLINE(HttpRequest, tlsAlloc, userPtrAtBegin);
+    m_tlsAllocator.alloc = tlsAlloc;
+    m_tlsAllocator.arg = this;
+
+    // Prepare settings
+    m_settings.headers_done_fn = onHeadersDoneProxy;
+    MAKE_TRAMPOLINE(HttpRequest, onTransferComplete, userPtrAtBegin);
+    m_settings.result_fn = onTransferComplete;
+    m_settings.altcp_allocator = &m_tlsAllocator;
+
+    // But it is too early to call anything in lwIP, as cyw43 may not be initialized yet.
 }
 
 HttpRequest::~HttpRequest()
@@ -25,25 +39,15 @@ void HttpRequest::start(const std::string &serverName, uint16_t port, const std:
     m_contentLen = -1;
     m_complete = false;
 
-    // Prepare TLS config
-    if (m_tlsConfig != nullptr)
-        altcp_tls_free_config(m_tlsConfig);
-    TRACE << "altcp_tls_create_config_client";
-    m_tlsConfig = altcp_tls_create_config_client(NULL, 0);
-    TRACE << "done, m_tlsConfig=" <<m_tlsConfig;
+    // Create the TLS config if it was not done yet
+    if (m_tlsConfig == nullptr)
+    {
+        TRACE << "altcp_tls_create_config_client";
+        m_tlsConfig = altcp_tls_create_config_client(NULL, 0);
+        TRACE << "done, m_tlsConfig=" <<m_tlsConfig;
+    }
 
-    // Prepare TLS allocator
-    MAKE_TRAMPOLINE(HttpRequest, tlsAlloc, userPtrAtBegin);
-    m_tlsAllocator.alloc = tlsAlloc;
-    m_tlsAllocator.arg = this;
-
-    // Prepare settings
-    m_settings.headers_done_fn = onHeadersDoneProxy;
-    MAKE_TRAMPOLINE(HttpRequest, onTransferComplete, userPtrAtBegin);
-    m_settings.result_fn = onTransferComplete;
-    m_settings.altcp_allocator = &m_tlsAllocator;
-
-    // Start the actual request
+    TRACE << "Start the actual request";
     MAKE_TRAMPOLINE(HttpRequest, receive, userPtrAtBegin);
     err_t e = httpc_get_file_dns(
         serverName.c_str(),
@@ -68,7 +72,9 @@ std::string HttpRequest::content() const
 
 altcp_pcb *HttpRequest::tlsAlloc(u8_t ip_type)
 {
-    return altcp_tls_alloc(m_tlsConfig, ip_type);
+    altcp_pcb *res = altcp_tls_alloc(m_tlsConfig, ip_type);
+    TRACE << "altcp_tls_alloc returned" << res;
+    return res;
 }
 
 err_t HttpRequest::onHeadersDoneProxy(
