@@ -58,6 +58,7 @@ private:
     int m_dataChannel = -1;
     int m_ctrlChannel = -1;
 #else
+    static bool rowScanProxy(repeating_timer_t *rt);
     bool rowScan();
     
     repeating_timer m_timer;

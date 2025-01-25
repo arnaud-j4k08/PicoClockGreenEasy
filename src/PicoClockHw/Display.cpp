@@ -1,7 +1,6 @@
 #include "Display.h"
 #include "Utils/Trace.h"
 #include "gpio.h"
-#include "Utils/Trampoline.h"
 
 #include <hardware/gpio.h>
 #include <hardware/adc.h>
@@ -77,8 +76,7 @@ Display::Display(const uint32_t *frameBuffer, std::function<void(Display &)> fra
 
     initDma();
 #else
-    MAKE_TRAMPOLINE(Display, rowScan, repeating_timer_t)
-    add_repeating_timer_ms(-1, rowScan, this, &m_timer);
+    add_repeating_timer_ms(-1, rowScanProxy, this, &m_timer);
 #endif
 
     TRACE << "Display constructor done";
@@ -217,6 +215,10 @@ void Display::onDmaTransferredFrame()
 }
 
 #else // DISPLAY_PIO
+bool Display::rowScanProxy(repeating_timer_t *rt)
+{
+    return static_cast<Display *>(rt->user_data)->rowScan();
+}
 
 bool Display::rowScan()
 {
