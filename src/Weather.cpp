@@ -1,5 +1,6 @@
 #include "Weather.h"
 #include "Utils/Trace.h"
+#include "PicoClockHw/Wifi.h"
 #include <functional>
 
 Weather::Weather()
@@ -10,8 +11,14 @@ Weather::Weather()
 
 void Weather::sync()
 {
-    // TODO: connect to wifi if needed
-    m_httpReq.start("api.openweathermap.org", 443, OPEN_WEATHER_MAP_URL);
+    // Connect wi-fi if necessary (the lambda expression below will also be called if already 
+    // connected)
+    Wifi::connectAsync(
+        [this](bool success)
+        {
+            if (success) 
+                m_httpReq.start("api.openweathermap.org", 443, OPEN_WEATHER_MAP_URL); 
+        });
 }
 
 void Weather::onRequestComplete(const std::string &content)

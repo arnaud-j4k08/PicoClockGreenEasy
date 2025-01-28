@@ -112,10 +112,10 @@ void HttpRequest::onTransferComplete(
 {
     TRACE << "Content-Length of header:" << m_contentLen;
     TRACE << "Received" << m_content.size() << "bytes in total";
-    TRACE << "httpc_result=" << httpc_result;
+    TRACE << "httpc_result=" << httpc_result; // 0 if successful, 3 if the wifi is not connected
     TRACE << "rx_content_len=" <<rx_content_len;
-    TRACE << "srv_res=" << srv_res;
-    TRACE << "err=" << static_cast<int>(err);
+    TRACE << "srv_res=" << srv_res; // 200 if succesful, 0 if the wifi is not connected
+    TRACE << "err=" << static_cast<int>(err); // 0 if successful, -16 if the wifi is not connected
     m_complete = true;
 
     if (m_onCompleteCallback)

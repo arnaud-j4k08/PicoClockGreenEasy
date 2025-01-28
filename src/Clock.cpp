@@ -104,9 +104,12 @@ void Clock::startNtpSync()
     if (status != Wifi::Connected)
     {
         TRACE << "Wifi::connectAsync";
-        Wifi::connectAsync();
-        TRACE << "Wifi::connectAsync done";
-        m_extSync = NtpWaitingForWifi;
+        using namespace std::placeholders;
+        if (Wifi::connectAsync(std::bind(&Clock::onWifiConnectionFinished, this, _1)))
+        {
+            TRACE << "Wifi::connectAsync done";
+            m_extSync = NtpWaitingForWifi;
+        }
     } else
     {
         TRACE << "Already connected";
@@ -122,6 +125,25 @@ void Clock::startGpsSync()
 {
     m_gps.setEnabled(true);
     m_extSync = GpsInProgress;
+}
+
+void Clock::onWifiConnectionFinished(bool success)
+{
+    if (success)
+    {
+        if (m_ntp)
+        {
+            TRACE << "Wifi connected, start NTP request";
+            m_ntp->startRequest();
+            TRACE << "Request started";
+            m_extSync = NtpInProgress;
+        } else
+            m_extSync = Inactive;
+    } else
+    {
+        TRACE << "Connection failed";
+        m_extSync = Inactive;
+    }
 }
 
 void Clock::onExternalTimeReceived(time_t utcTime, uint32_t ms, Settings::SyncSource source)
@@ -192,8 +214,6 @@ void Clock::tick(bool &clockAdjusted, Settings::AlarmMode &reachedAlarmMode)
         }
     }
 
-    monitorWifiConnection();
-
     // Handle events to be checked on every minute.
     if (m_tickCount == 0 && m_tm.tm_sec == 0)
     {
@@ -209,34 +229,6 @@ void Clock::tick(bool &clockAdjusted, Settings::AlarmMode &reachedAlarmMode)
         m_clockAdjusted = false;
         clockAdjusted = true;
     } 
-}
-
-void Clock::monitorWifiConnection()
-{
-    if (m_extSync == NtpWaitingForWifi)
-    {
-        auto status = Wifi::linkStatus();
-        switch (status)
-        {
-            case Wifi::Connecting:
-            case Wifi::NoIp:
-                // Continue waiting for connection
-                break;
-            case Wifi::Connected:
-                if (m_ntp)
-                {
-                    TRACE << "Wifi connected, start NTP request";
-                    m_ntp->startRequest();
-                    TRACE << "Request started";
-                    m_extSync = NtpInProgress;
-                } else
-                    m_extSync = Inactive;
-                break;
-            default:
-                TRACE << "Connection failed";
-                m_extSync = Inactive;
-        }
-    }
 }
 
 Settings::AlarmMode Clock::checkIfAlarmReached()
