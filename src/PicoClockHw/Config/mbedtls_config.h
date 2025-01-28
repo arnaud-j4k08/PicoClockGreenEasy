@@ -1,5 +1,4 @@
 // Copied from https://github.com/raspberrypi/pico-examples/blob/master/pico_w/wifi/mbedtls_config_examples_common.h
-// TODO: move this file to PicoClowHw
 
 #ifndef MBEDTLS_CONFIG_TLS_CLIENT_H
 #define MBEDTLS_CONFIG_TLS_CLIENT_H
