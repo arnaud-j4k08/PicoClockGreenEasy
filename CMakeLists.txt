@@ -108,8 +108,9 @@ if (PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PI
         set_source_files_properties(
                 ${PICO_LWIP_PATH}/src/apps/altcp_tls/altcp_tls_mbedtls.c
                 ${PICO_LWIP_PATH}/src/apps/altcp_tls/altcp_proxyconnect.c
+                ${PICO_LWIP_PATH}/src/apps/http/altcp_proxyconnect.c
                 PROPERTIES
-                COMPILE_OPTIONS "-Wno-unused-result"
+                COMPILE_OPTIONS "-Wno-unused-result;-Wno-incompatible-pointer-types"
                 )                
 endif()
 
@@ -122,4 +123,6 @@ pico_enable_stdio_uart(${PROJECT_NAME} 0)
 
 # TODO: change this so that the lwip and mbedtls configs do not have to be at the root
 target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}/src )
+    ${CMAKE_CURRENT_LIST_DIR}/src
+    ${CMAKE_CURRENT_LIST_DIR}/src/PicoClockHw/Config
+    )

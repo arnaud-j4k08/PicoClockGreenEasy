@@ -5,7 +5,15 @@
 #include <pico/cyw43_arch.h>
 #include <boards/pico.h>
 
+namespace
+{
+    const int MONITOR_CONNECTION_PERIOD_MS = 100;
+}
+
 Wifi::Status Wifi::m_connectResult = Wifi::Unknown;
+alarm_id_t Wifi::m_monitorConnectionAlarm = -1;
+std::list<std::function<void(bool success)>> Wifi::m_connectionFinishedCallbacks;
+
 
 bool Wifi::init()
 {
@@ -44,7 +52,7 @@ bool Wifi::connectBlocking()
     return handleConnectResult(res);
 }
 
-bool Wifi::connectAsync()
+bool Wifi::connectAsync(const std::function<void(bool)> &finishedCallback)
 {
     TRACE << "cyw43_arch_wifi_connect_async with ssid=" <<WIFI_SSID;
     // I am not sure I am getting it right, but if WIFI_SSID and WIFI_PASSWORD are empty strings, 
@@ -52,7 +60,41 @@ bool Wifi::connectAsync()
     // cycle. This behavior is not documented.
     int res = cyw43_arch_wifi_connect_async(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK);
     TRACE << "Result: " << res;
+
+    if (res == 0) 
+    {
+        TRACE << "Connection was started successfully";
+
+        m_connectionFinishedCallbacks.push_back(finishedCallback);
+
+        if (m_monitorConnectionAlarm == -1)
+            m_monitorConnectionAlarm = 
+                add_alarm_in_ms(MONITOR_CONNECTION_PERIOD_MS, &monitorConnection, nullptr, false);
+    } else
+        TRACE << "Connection not started";
+
     return handleConnectResult(res);
+}
+
+int64_t Wifi::monitorConnection(alarm_id_t id, void *user_data)
+{
+    int res = cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
+    
+    if (res == CYW43_LINK_JOIN || res == CYW43_LINK_NOIP)
+    {
+        // Reschedule the same alarm to continue waiting for connection
+        return -MONITOR_CONNECTION_PERIOD_MS * 1000;
+    } else
+    {
+        // Call callbacks that were waiting for a connection and forget them.
+        for (const auto &c : m_connectionFinishedCallbacks)
+            c(res == CYW43_LINK_UP);
+        m_connectionFinishedCallbacks.clear();
+
+        // Do not reschedule
+        m_monitorConnectionAlarm = -1;
+        return 0;
+    }
 }
 
 bool Wifi::handleConnectResult(int res)

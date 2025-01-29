@@ -100,7 +100,6 @@ public:
     void syncWxNow();                                               // kdkWx  Intermediate stub.  Mirrors NTP
     void syncInfo(SyncInfo &info);
     void wxInfo(WxInfo &info);                                      // kdkWx  Used by WeatherInfo
-    void logWeather(Clock::WxInfo &info);                           // kdkWx  Can probably delete
 
 private:
     struct Time
@@ -116,7 +115,6 @@ private:
     };
 
     void onExternalTimeReceived(time_t utcTime, uint32_t ms, Settings::SyncSource source);
-    void monitorWifiConnection();
     Settings::AlarmMode checkIfAlarmReached();
     bool alarmReached(AlarmId id) const;
     const Settings::Alarm &alarm(AlarmId id) const;
@@ -138,6 +136,7 @@ private:
     tm startRtcSync();
     void startNtpSync();
     void startGpsSync();
+    void onWifiConnectionFinished(bool success);
     void startWxSync();                             // kdkWx need this once we start updating every 15min or 30 minutes
                                                     // kdkWx Also part of Weather subMenu Action bind in ClockUi
 
@@ -173,7 +172,8 @@ private:
     WxInfo m_wxInfo;                                                         // kdkWx  pointer to WxInfo stucture
     std::string tempstr2;                                                    // kdkWx  
     int tempInt = 0;                                                         // kdkWx
-    std::string json;                                                        // kdkWx   
+    std::string json;                                                        // kdkWx
+    std::string wifi_called_by;   
     DaylightSavingTime m_dst;
     time_t m_time = 0; // Current time as unix time, local (not UTC), not considering DST
     tm m_tm = {}; // Current time as tm, considering DST

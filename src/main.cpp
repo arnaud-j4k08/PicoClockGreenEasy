@@ -32,23 +32,6 @@ int main()
         ;
     TRACE << "Connected!\n";
     
-    // TODO: Only for testing. Perform the request and output the result.
-    //TRACE << "Creating HttpRequest object called req \n";
-    //HttpRequest req;       // this is creating a class object called req
-    //TRACE << "Issuing HttpRequest Start request\n ";
-    //req.start();
-    //while (!req.isComplete())
-    //    ;
-    //std::cout << "HTTP request result: " << req.content() <<std::endl;
-
-        // TODO: declared here only for testing
-    //TRACE << "In Main, calling Weather2 weather2\n";    
-    //Weather2 weather2;  // sets callback 
-    //TRACE << "In Main, after Weather2 weather2, calling sync\n";
-    //weather2.sync();
-    //TRACE << "In Main, After weather2 sync\n";
-
-
     TRACE <<"Start the loop\n";
     Platform::runMainLoop();
 
