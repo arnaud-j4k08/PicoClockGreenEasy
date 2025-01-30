@@ -38,13 +38,12 @@ void WeatherInfo::renderFrame(
             sprintf(tempString, "%5.2f", info.ctemp);
             
             text = 
-                uiText(TextId::Temperature) + tempString + " F";
+                uiText(TextId::Temperature) + tempString ;
 
             if (settings().useCelsius)
                 frame.putIndicator(Bitmap::C, true);
             else
                 frame.putIndicator(Bitmap::F, true);   
-//                std::to_string(info.ctemp);
             break;  
          case WxPressure:
             text = 
@@ -59,18 +58,19 @@ void WeatherInfo::renderFrame(
         case WxWind:
             char tempString2[6];
             sprintf(tempString2, "%5.2f", info.windSpeed);
-            text = 
+            if (settings().useCelsius)
+                text = 
+                uiText(TextId::WindSpeed) + tempString2 + " MPS";
+            else
+                text = 
                 uiText(TextId::WindSpeed) + tempString2 + " MPH";
-//                std::to_string(info.windSpeed);
             break; 
         case WxWindDirection:
             text = 
-//              uiText(TextId::WindDir) + getCardinal(info.windDegree) + " (" + std::to_string(info.windDegree) + ")";
                 uiText(TextId::WindDir) + info.windCardinal + " (" + std::to_string(info.windDegree) + ")";
-//                std::to_string(info.windSpeed);
             break;          
         case WxSunrise:   
-            WxTime = info.sunRise + info.wxTimezone;  //  Remove the UTC offset in seconds.  This finally gives us local time
+            WxTime = info.sunRise + info.wxTimezone;  //  Remove the UTC offset in seconds.  This gives us local time
             m_Wxtm = *localtime(&WxTime); 
 
             text =
@@ -78,17 +78,17 @@ void WeatherInfo::renderFrame(
             putAmPmIndicators(frame, morning);
             break;
         case WxDateTime:   
-            WxTime = info.wxDateTime + info.wxTimezone;  //  Remove the UTC offset in seconds.  This finally gives local time
+            WxTime = info.wxDateTime + info.wxTimezone;  //  Remove the UTC offset in seconds.  This gives local time
             m_Wxtm = *localtime(&WxTime); 
 
             text =
-                uiText(TextId::LastSyncColon) + timeToString(m_Wxtm, morning) +
+                uiText(TextId::LastUpdate) + timeToString(m_Wxtm, morning) +
                 " " + dateToString(m_Wxtm); 
             putAmPmIndicators(frame, morning);
 
             break;            
         case WxSunset:   
-            WxTime = info.sunSet + info.wxTimezone;  //  Remove the UTC offset in seconds.  This finally gives us local time
+            WxTime = info.sunSet + info.wxTimezone;  //  Remove the UTC offset in seconds.  This gives us local time
             m_Wxtm = *localtime(&WxTime); 
 
             text =
@@ -146,36 +146,4 @@ std::string WeatherInfo::dateToString(const tm &tm) const
     }
 
     return "";
-}
-
-std::string WeatherInfo::getCardinal(int degrees) const   // This is currently a lot to do each second.  If it is done on sync, not so much kdkWx
-{
-//    if (degrees < 22) return "N";
-//    if (degrees < 67) return "NE";
-//    if (degrees < 113) return "E";
-//    if (degrees < 158) return "SE";
-//    if (degrees < 202) return "S";
-//    if (degrees < 248) return "SW";
-//    if (degrees < 293) return "W";
-//    if (degrees < 338) return "NW";
-//    return "N";
-
-    if (degrees < 11) return "N";
-    if (degrees < 34) return "NNE";
-    if (degrees < 56) return "NE";
-    if (degrees < 79) return "ENE";
-    if (degrees < 101) return "E";
-    if (degrees < 123) return "ESE";
-    if (degrees < 146) return "SE";
-    if (degrees < 169) return "SSE";
-    if (degrees < 191) return "S";
-    if (degrees < 214) return "SSW";
-    if (degrees < 236) return "SW";
-    if (degrees < 259) return "WSW";
-    if (degrees < 282) return "W";
-    if (degrees < 304) return "WNW";
-    if (degrees < 327) return "NW";
-    if (degrees < 349) return "NNW";
-    return "N";
-
 }

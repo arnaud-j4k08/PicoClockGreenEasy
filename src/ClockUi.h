@@ -62,6 +62,7 @@ private:
     int m_WxWindFuncIdx = 3;            // kdkWx
     int m_WxWindDirectionFuncIdx = 4;   // kdkWx   
     int m_WxHumidityFuncIdx = 5;        // kdkWx
+    int m_WxLastUpdateFuncIdx = 9;      // kdkWx
 
     Stopwatch *m_stopwatchFunc = nullptr;
     Countdown *m_countdownFunc = nullptr;

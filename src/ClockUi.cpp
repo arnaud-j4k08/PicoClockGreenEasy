@@ -17,7 +17,6 @@
 #include "Functions/SyncInfo.h"
 #include "Functions/WeatherInfo.h"          // kdkWx
 #include "Functions/SyncNow.h"
-#include "Functions/SyncWxNow.h"            // kdkWx
 #include "Functions/SyncSource.h"
 #include "Functions/Temperature.h"
 #include "Functions/Time.h"
@@ -228,7 +227,7 @@ void ClockUi::onFrameCallback()
             switch(m_clock.get().tm_sec)                                                            // kdkWx
             {                                                                                       // kdkWx
                 case 0:                                                                             // kdkWx
-                    m_curFuncIdx = m_WxNameFuncIdx;  // start with the City Name index of 0         // kdkWx
+                    m_curFuncIdx = m_WxLastUpdateFuncIdx;  // start with the City Name index of 9   // kdkWx
                     startVertScrolling(-1);                                                         // kdkWx
                     break;                                                                          // kdkWx
                                                                                                     // kdkWx

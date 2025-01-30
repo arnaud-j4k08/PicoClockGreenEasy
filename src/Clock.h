@@ -153,7 +153,7 @@ private:
         NtpWaitingForWifi,
         NtpInProgress,
         GpsInProgress,
-        WxWaitingForWifi,                           // kdkWx  Probably better to have it here, rather than a new enum.  Conflict with NTP
+        WxWaitingForWifi,                           // kdkWx  Conflict with NTP
         WxInProgress                                // kdkWx  
     };
 
@@ -162,7 +162,6 @@ private:
 
     std::unique_ptr<Rtc> m_rtc; // As unique_ptr so that it can be easily disabled
     std::unique_ptr<Ntp> m_ntp;
-    //std::unique_ptr<Weather> m_wx;                  // kdkWx  Can probably delete, as Weather class goes away, or change to boolean
     Gps m_gps;
     RtcSync m_rtcSync = SyncingFromRtc;
     int m_lastRtcSec;

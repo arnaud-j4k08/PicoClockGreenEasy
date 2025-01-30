@@ -87,6 +87,7 @@ enum class TextId
     Sunset,         // kdkWx
     CityName,       // kdkWx
     SyncWxNow,      // kdkWx
+    LastUpdate,     // kdkWx
 
 
     TextCount

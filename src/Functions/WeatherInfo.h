@@ -32,7 +32,6 @@ private:
     std::string timeToString(int hour, int min, bool &morning) const;
     std::string timeToString(const tm &tm, bool &morning) const;
     std::string dateToString(const tm &tm) const;
-    std::string getCardinal(int degrees) const;
 
     Entry m_entry;
 

@@ -70,8 +70,8 @@ void Clock::onWifiInited()
     // We will want to start Weather Sync here, if m_wx = True.
     if (m_wx)                                                                   // kdkWx  Was UniquePtr, is now boolean
         {                                                                       // kdkWx 
-        TRACE << "In Clock::onWifiInited, calling syncWxNow \n";                // kdkWx                                                                  // kdkWx
-        syncWxNow();                                                            // kdkWx 
+        TRACE << "In Clock::onWifiInited, calling startWxSync \n";              // kdkWx                                                                  // kdkWx
+        startWxSync();                                                          // kdkWx Bypass check for other syncs
         }                                                                       // kdkWx    
 }
 void Clock::syncNow()
@@ -134,7 +134,7 @@ void Clock::startNtpSync()
         if (Wifi::connectAsync(std::bind(&Clock::onWifiConnectionFinished, this, _1)))
         {
             TRACE << "Wifi::connectAsync done";
-            wifi_called_by = "Ntp";
+            wifi_called_by = "Ntp";                                             // kdkWx for use by onWifiConnectionFinished
             m_extSync = NtpWaitingForWifi;
         }
     } else
@@ -163,7 +163,6 @@ void Clock::startWxSync()                                                       
             wifi_called_by = "Wx";                                              // kdkWx
             m_extSync = WxWaitingForWifi;                                       // kdkWx
         }                                                                       // kdkWx  
-                                                                                // kdkWx     New value in ExternalSync to avoid conflicts with NTP
     } else                                                                      // kdkWx  
     {                                                                           // kdkWx  
         TRACE << "Already connected";                                           // kdkWx  
@@ -234,7 +233,6 @@ void Clock::onRequestComplete(const std::string &content)                       
     tempstr2 = Clock::extract(json, "dt");
     m_wxInfo.wxDateTime = std::stoull(tempstr2);
     std::cout <<"wxDateTime: " <<tempstr2 <<std::endl;
-
 }
 
 std::string Clock::extract(const std::string &json, const std::string &name)    // kdkWx Entire section moved from Weather.cpp
@@ -263,7 +261,6 @@ std::string Clock::extractStr(const std::string &json, const std::string &name) 
 
 std::string Clock::getCardinal(int degrees) const                                 // kdkWx Entire section moved from Weather.cpp
 {
-
     if (degrees < 11) return "N";
     if (degrees < 34) return "NNE";
     if (degrees < 56) return "NE";
@@ -281,7 +278,6 @@ std::string Clock::getCardinal(int degrees) const                               
     if (degrees < 327) return "NW";
     if (degrees < 349) return "NNW";
     return "N";
-
 }
 
 void Clock::startGpsSync()
@@ -394,8 +390,9 @@ void Clock::tick(bool &clockAdjusted, Settings::AlarmMode &reachedAlarmMode)
         // Perform the daily synchronization if the time is reached.
         if (m_tm.tm_min == m_syncInfo.dailySyncMin && m_tm.tm_hour == m_syncInfo.dailySyncHour)
             syncNow();
-        tempInt = m_tm.tm_min % 30;                                 // kdkWx divide minutes by 20 and get remainder
-        if (tempInt == 0)                                           // kdkWx if evenly divisible by 20, update the weather
+        //                                                          // kdkWx Update the weather info every 30 minutes.  
+        tempInt = (m_tm.tm_min + 6) % 30;                           // kdkWx add a number between 1 and 29 to avoid top or bottom of hour
+        if (tempInt == 0)                                           // kdkWx If tempInt evenly divisible by 30, update the weather
             {
                 TRACE << "In Clock::tick, periodically syncing weather \n";
                 startWxSync();                                      // kdkWx
@@ -496,10 +493,9 @@ void Clock::syncInfo(SyncInfo &info)
     info = m_syncInfo;
 }
 
-//                                                              // kdkWx
 void Clock::wxInfo(WxInfo &info)                                // kdkWx  Used by WeatherInfo.cpp
 {                                                               // kdkWx
-    info = m_wxInfo;                                            // kdkWx  m_wxInfo is a pointer to structure in Clock.h 
+    info = m_wxInfo;                                            // kdkWx  m_wxInfo is a pointer to WxInfo structure in Clock.h 
 }                                                               // kdkWx
 
 
