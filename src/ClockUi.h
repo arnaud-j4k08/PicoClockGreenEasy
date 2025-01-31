@@ -55,9 +55,9 @@ private:
     int m_dateFuncIdx = 0;
     int m_temperatureFuncIdx = 0;
 
-//  indexes for Weather scrolling test  // kdkWx    
-    int m_WxNameFuncIdx = 0;            // kdkWx
-    int m_WxConditionsFuncIdx = 1;      // kdkWx
+//  Indexes for Weather Auto Scrolling  // kdkWx  Index values are determined by the order that a function is added to Weather Submenu
+    int m_WxNameFuncIdx = 0;            // kdkWx  If the Weather Submenu functions are re-ordered, or functions removed/added, these
+    int m_WxConditionsFuncIdx = 1;      // kdkWx  values will need to be adjusted.
     int m_WxTemperatureFuncIdx = 2;     // kdkWx
     int m_WxWindFuncIdx = 3;            // kdkWx
     int m_WxWindDirectionFuncIdx = 4;   // kdkWx   

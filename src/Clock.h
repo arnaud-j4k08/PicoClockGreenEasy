@@ -31,21 +31,21 @@ public:
         int lastSyncDriftMs = 0;
     };
 
-// Structure for Weather information.  Probably belongs in Weather.h, not here.  //kdkWx
+// Structure for Weather information.                   //kdkWx
     struct WxInfo                                       //kdkWx
     {                                                   //kdkWx
-        std::string conditions = "Clearsky";            //kdkWx
-        float ctemp = 19.18;                            //kdkWx
-        int pressure = 1022;                            //kdkWx
-        int humidity = 61;                              //kdkWx
-        float windSpeed = 11.5;                         //kdkWx
-        int windDegree = 320;                           //kdkWx
-        std::string windCardinal = "NNW";               //kdkWx
-        uint64_t sunRise = 1736512199;                  //kdkWx
-        uint64_t sunSet = 1736546826;                   //kdkWx
-        uint64_t wxTimezone = -18000;                   //kdkWx
-        std::string cityName = "Round Hill";            //kdkWx
-        uint64_t wxDateTime = 1736517544;               //kdkWx
+        std::string conditions = "No Data";             //kdkWx
+        float ctemp = 0;                                //kdkWx
+        int pressure = 0;                               //kdkWx
+        int humidity = 0;                               //kdkWx
+        float windSpeed = 0;                            //kdkWx
+        int windDegree = 0;                             //kdkWx
+        std::string windCardinal = "N";                 //kdkWx
+        uint64_t sunRise = 0;                           //kdkWx
+        uint64_t sunSet = 0;                            //kdkWx
+        uint64_t wxTimezone = 0;                        //kdkWx
+        std::string cityName = "No Data";               //kdkWx
+        uint64_t wxDateTime = 0;                        //kdkWx
     };                                                  //kdkWx
 
     // Beware that the object keeps a reference on settings, so it must exists at least as long as
@@ -137,7 +137,7 @@ private:
     void startNtpSync();
     void startGpsSync();
     void onWifiConnectionFinished(bool success);
-    void startWxSync();                             // kdkWx need this once we start updating every 15min or 30 minutes
+    void startWxSync();                             // kdkWx Called during Clock initialization, and periodic updates
                                                     // kdkWx Also part of Weather subMenu Action bind in ClockUi
 
     enum RtcSync
@@ -153,7 +153,7 @@ private:
         NtpWaitingForWifi,
         NtpInProgress,
         GpsInProgress,
-        WxWaitingForWifi,                           // kdkWx  Conflict with NTP
+        WxWaitingForWifi,                           // kdkWx  
         WxInProgress                                // kdkWx  
     };
 
@@ -169,20 +169,20 @@ private:
 
     SyncInfo m_syncInfo;
     WxInfo m_wxInfo;                                                         // kdkWx  pointer to WxInfo stucture
-    std::string tempstr2;                                                    // kdkWx  
-    int tempInt = 0;                                                         // kdkWx
-    std::string json;                                                        // kdkWx
-    std::string wifi_called_by;   
+    std::string tempstr2;                                                    // kdkWx  used in populating WxInfo
+    int tempInt = 0;                                                         // kdkWx  used in populating WxInfo
+    std::string json;                                                        // kdkWx  Holds json string in populating WxInfo
+    std::string wifi_called_by;                                              // kdkWx  Used in onWifiConnectionFinished  
     DaylightSavingTime m_dst;
     time_t m_time = 0; // Current time as unix time, local (not UTC), not considering DST
     tm m_tm = {}; // Current time as tm, considering DST
 
-    HttpRequest m_httpReq;                                                  // kdkWx
-    void onRequestComplete(const std::string &content);                     // kdkWx
-    std::string extract(const std::string &json, const std::string &name);  // kdkWx
+    HttpRequest m_httpReq;                                                   // kdkWx
+    void onRequestComplete(const std::string &content);                      // kdkWx
+    std::string extract(const std::string &json, const std::string &name);   // kdkWx
     std::string extractStr(const std::string &json, const std::string &name); // kdkWx
-    std::string getCardinal(int degrees) const;                             // kdkWx   
+    std::string getCardinal(int degrees) const;                              // kdkWx   
 
     bool m_clockAdjusted = true;
-    bool m_wx = true;                                                     // kdkWx  Boolean to test execution of Weather functions
+    bool m_wx = true;                                                        // kdkWx  Boolean to test execution of Weather functions
 };

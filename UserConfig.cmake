@@ -4,6 +4,7 @@ set(PICO_BOARD pico_w)
 # Enable/disable debug traces to stdio. Traces can be filtered by file in the 
 # isEnabledForFile method of src/Utils/Trace.cpp
 set(TRACE_TO_STDIO "0")
+set(INCLUDE_WEATHER "0")  # 0 or 1, 1 = Include the Weather Submenu.  Requires OPEN_WEATHER_MAP_URL, WIFI_SSID, and WIFI_PASSWORD below
 
 add_compile_definitions(
     OPEN_WEATHER_MAP_URL=\"\"  # There are so many options in the API, it is easiest to define them as a group. 

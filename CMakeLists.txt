@@ -93,6 +93,10 @@ if (DISPLAY_PIO)
         target_link_libraries(${PROJECT_NAME} hardware_dma hardware_pio)
 endif()
 
+if (INCLUDE_WEATHER)
+        add_compile_definitions(INCLUDE_WEATHER)
+endif()
+
 if (PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PICO_BOARD=pico_w
         target_compile_definitions(${PROJECT_NAME} PRIVATE PICO_CYW43_SUPPORTED)
         target_sources(${PROJECT_NAME} PRIVATE

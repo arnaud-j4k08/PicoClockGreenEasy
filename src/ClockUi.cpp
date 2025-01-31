@@ -67,9 +67,11 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
         addFunctionAndReturnPtr<Submenu>(uiText(TextId::Stopwatch), &m_rootMenu);
     Submenu *syncSubmenu = 
         addFunctionAndReturnPtr<Submenu>(uiText(TextId::Sync), &m_rootMenu);
+    #ifdef INCLUDE_WEATHER    
     Submenu *wxSubmenu =                                                            // kdkWx
         addFunctionAndReturnPtr<Submenu>(uiText(TextId::Weather), &m_rootMenu);     // kdkWx
-        m_wxMenu = wxSubmenu->menu();                                               // kdkWx  For use in AutoScroll    
+        m_wxMenu = wxSubmenu->menu();                                               // kdkWx  For use in AutoScroll
+    #endif        
     addFunction<Options>();
 
     TRACE << "Add functions of the alarm submenu";
@@ -95,18 +97,20 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
     syncSubmenu->addFunction<SyncInfo>(this, SyncInfo::LastSyncDrift);
     syncSubmenu->addFunction<WifiStatus>(this);
 
+    #ifdef INCLUDE_WEATHER
     TRACE << "Add functions of the Wx submenu";                                 // kdkWx
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxName);             // kdkWx
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxConditions);       // kdkWx
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxTemperature);      // kdkWx
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWind);             // kdkWx
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWindDirection);    // kdkWx
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxHumidity);         // kdkWx
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxPressure);         // kdkWx
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunrise);          // kdkWx
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunset);           // kdkWx
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxDateTime);         // kdkWx
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxName);             // kdkWx Index value = 0
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxConditions);       // kdkWx Index value = 1
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxTemperature);      // kdkWx Index value = 2
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWind);             // kdkWx Index value = 3
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWindDirection);    // kdkWx Index value = 4
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxHumidity);         // kdkWx Index value = 5
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxPressure);         // kdkWx Index value = 6
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunrise);          // kdkWx Index value = 7
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunset);           // kdkWx Index value = 8
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxDateTime);         // kdkWx Index value = 9
     wxSubmenu->addFunction<Action>(this, uiText(TextId::SyncWxNow), std::bind(&Clock::syncWxNow, &m_clock));
+    #endif
 
     // Remember the last used time function in case auto scroll is enabled.
     if (m_currentMenu->at(m_curFuncIdx)->isTimeFunction())
@@ -217,17 +221,17 @@ void ClockUi::onFrameCallback()
             }
         }
 
-// duplicating autoscroll for a test of Weather submenu scrolling                                   // kdkWx
+// duplicating autoscroll for Weather submenu scrolling                                             // kdkWx
                                                                                                     // kdkWx
         if (m_settings.get().autoScroll &&                                                          // kdkWx
             m_editedValueIndex == NoEditing &&                                                      // kdkWx
-            m_currentMenu == m_wxMenu &&                                                            // kdkWx      
+            m_currentMenu == m_wxMenu &&                                                            // kdkWx Are we in the Weather menu?     
             m_secondsWithoutUserInput >= AUTO_SCROLL_DELAY_SEC)                                     // kdkWx
         {                                                                                           // kdkWx
             switch(m_clock.get().tm_sec)                                                            // kdkWx
             {                                                                                       // kdkWx
                 case 0:                                                                             // kdkWx
-                    m_curFuncIdx = m_WxLastUpdateFuncIdx;  // start with the City Name index of 9   // kdkWx
+                    m_curFuncIdx = m_WxLastUpdateFuncIdx;  // start with Update time   index of 9   // kdkWx
                     startVertScrolling(-1);                                                         // kdkWx
                     break;                                                                          // kdkWx
                                                                                                     // kdkWx
