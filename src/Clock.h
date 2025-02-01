@@ -44,7 +44,7 @@ public:
         uint64_t sunRise = 0;                           //kdkWx
         uint64_t sunSet = 0;                            //kdkWx
         uint64_t wxTimezone = 0;                        //kdkWx
-        std::string cityName = "No Data";               //kdkWx
+        std::string cityName = "No Data";               //kdkWx  Not currently supported by OpenWeatherMap 3.0 API
         uint64_t wxDateTime = 0;                        //kdkWx
     };                                                  //kdkWx
 
@@ -169,9 +169,7 @@ private:
 
     SyncInfo m_syncInfo;
     WxInfo m_wxInfo;                                                         // kdkWx  pointer to WxInfo stucture
-    std::string tempstr2;                                                    // kdkWx  used in populating WxInfo
-    int tempInt = 0;                                                         // kdkWx  used in populating WxInfo
-    std::string json;                                                        // kdkWx  Holds json string in populating WxInfo
+
     std::string wifi_called_by;                                              // kdkWx  Used in onWifiConnectionFinished  
     DaylightSavingTime m_dst;
     time_t m_time = 0; // Current time as unix time, local (not UTC), not considering DST

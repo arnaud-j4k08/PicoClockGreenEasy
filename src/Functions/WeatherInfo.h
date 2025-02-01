@@ -16,7 +16,7 @@ public:
         WxWindDirection,
         WxSunrise,
         WxSunset,
-        WxName,
+        WxName,  // Not currently supported in OpenWeatherMap 3.0 API
         WxDateTime,
     };
     WeatherInfo(ClockUi *clockUi, Entry entry) : AbstractFunction(clockUi), m_entry(entry)
@@ -35,7 +35,4 @@ private:
 
     Entry m_entry;
 
-    // My local time variables for calculating weather times.  Trying to avoid memory leak.
-    time_t WxTime = 0; // UTC time as unix time, local,  not considering DST
-    tm m_Wxtm = {}; // Current time as tm, not considering DST
 };

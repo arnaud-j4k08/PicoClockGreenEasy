@@ -56,13 +56,13 @@ private:
     int m_temperatureFuncIdx = 0;
 
 //  Indexes for Weather Auto Scrolling  // kdkWx  Index values are determined by the order that a function is added to Weather Submenu
-    int m_WxNameFuncIdx = 0;            // kdkWx  If the Weather Submenu functions are re-ordered, or functions removed/added, these
-    int m_WxConditionsFuncIdx = 1;      // kdkWx  values will need to be adjusted.
-    int m_WxTemperatureFuncIdx = 2;     // kdkWx
-    int m_WxWindFuncIdx = 3;            // kdkWx
-    int m_WxWindDirectionFuncIdx = 4;   // kdkWx   
-    int m_WxHumidityFuncIdx = 5;        // kdkWx
-    int m_WxLastUpdateFuncIdx = 9;      // kdkWx
+//  int m_WxNameFuncIdx = 0;            // kdkWx  If the Weather Submenu functions are re-ordered, or functions removed/added, these
+    int m_WxConditionsFuncIdx = 0;      // kdkWx  values will need to be adjusted.
+    int m_WxTemperatureFuncIdx = 1;     // kdkWx
+    int m_WxWindFuncIdx = 2;            // kdkWx
+    int m_WxWindDirectionFuncIdx = 3;   // kdkWx   
+    int m_WxHumidityFuncIdx = 4;        // kdkWx
+    int m_WxLastUpdateFuncIdx = 8;      // kdkWx
 
     Stopwatch *m_stopwatchFunc = nullptr;
     Countdown *m_countdownFunc = nullptr;

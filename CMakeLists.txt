@@ -63,14 +63,12 @@ add_executable( ${PROJECT_NAME}
                 src/Functions/Temperature.cpp
                 src/Functions/Time.cpp
                 src/Functions/WifiStatus.cpp
-                src/Functions/WeatherInfo.cpp
 
                 src/PicoClockHw/Button.cpp
                 src/PicoClockHw/Buzzer.cpp
                 src/PicoClockHw/Display.cpp
                 src/PicoClockHw/Flash.cpp
                 src/PicoClockHw/Gps.cpp
-                src/PicoClockHw/HttpRequest.cpp
                 src/PicoClockHw/Platform.cpp
                 src/PicoClockHw/Rtc.cpp
 )
@@ -95,6 +93,9 @@ endif()
 
 if (INCLUDE_WEATHER)
         add_compile_definitions(INCLUDE_WEATHER)
+        target_sources(${PROJECT_NAME} PRIVATE
+                src/Functions/WeatherInfo.cpp
+                src/PicoClockHw/HttpRequest.cpp)
 endif()
 
 if (PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PICO_BOARD=pico_w

@@ -99,16 +99,16 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
 
     #ifdef INCLUDE_WEATHER
     TRACE << "Add functions of the Wx submenu";                                 // kdkWx
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxName);             // kdkWx Index value = 0
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxConditions);       // kdkWx Index value = 1
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxTemperature);      // kdkWx Index value = 2
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWind);             // kdkWx Index value = 3
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWindDirection);    // kdkWx Index value = 4
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxHumidity);         // kdkWx Index value = 5
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxPressure);         // kdkWx Index value = 6
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunrise);          // kdkWx Index value = 7
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunset);           // kdkWx Index value = 8
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxDateTime);         // kdkWx Index value = 9
+    //  wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxName);         // kdkWx Name not supported by OpenWeatherMap 3.0 API
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxConditions);       // kdkWx Index value = 0
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxTemperature);      // kdkWx Index value = 1
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWind);             // kdkWx Index value = 2
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWindDirection);    // kdkWx Index value = 3
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxHumidity);         // kdkWx Index value = 4
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxPressure);         // kdkWx Index value = 5
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunrise);          // kdkWx Index value = 6
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunset);           // kdkWx Index value = 7
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxDateTime);         // kdkWx Index value = 8
     wxSubmenu->addFunction<Action>(this, uiText(TextId::SyncWxNow), std::bind(&Clock::syncWxNow, &m_clock));
     #endif
 

@@ -193,7 +193,10 @@ void Clock::startWxSync()                                                       
 
 
 void Clock::onRequestComplete(const std::string &content)                       // kdkWx Call to OpenWeatherMap API is complete
-{                                                                               // kdkWx Populate WxInfo with result
+{   
+    std::string tempstr2;                                                    // kdkWx  used in populating WxInfo
+    int tempInt = 0;                                                         // kdkWx  used in populating WxInfo
+    std::string json;                                                        // kdkWx  Holds json string in populating WxInfo                                                                            // kdkWx Populate WxInfo with result
     TRACE << "In Clock::onRequestComplete: \n";
     std::cout << m_httpReq.content() <<std::endl;
     json = m_httpReq.content();                                                 // kdkWx Copy result string from receive buffer
@@ -213,10 +216,10 @@ void Clock::onRequestComplete(const std::string &content)                       
     tempstr2 = Clock::extract(json, "humidity");
     m_wxInfo.humidity = std::stoi(tempstr2);
     std::cout <<"humidity: " <<tempstr2 <<std::endl;
-    tempstr2 = Clock::extract(json, "speed");
+    tempstr2 = Clock::extract(json, "wind_speed");
     m_wxInfo.windSpeed = std::stof(tempstr2);
     std::cout <<"windSpeed: " <<tempstr2 <<std::endl;       
-    tempstr2 = Clock::extract(json, "deg");
+    tempstr2 = Clock::extract(json, "wind_deg");
     m_wxInfo.windDegree = std::stoi(tempstr2);
     tempInt = std::stoi(tempstr2);
     std::cout <<"windDegree: " <<tempstr2 <<std::endl;
@@ -231,12 +234,12 @@ void Clock::onRequestComplete(const std::string &content)                       
     tempstr2 = Clock::extract(json, "sunset");
     m_wxInfo.sunSet = std::stoull(tempstr2);
     std::cout <<"sunSet: " <<tempstr2 <<std::endl;
-    tempstr2 =Clock::extract(json, "timezone");
+    tempstr2 =Clock::extract(json, "timezone_offset");
     m_wxInfo.wxTimezone = std::stoull(tempstr2);
     std::cout <<"wxTimeZone: " <<tempstr2 <<std::endl;
-    tempstr2 = Clock::extractStr(json, "name");
-    m_wxInfo.cityName = tempstr2;
-    std::cout <<"cityName: " <<tempstr2 <<std::endl;
+//    tempstr2 = Clock::extractStr(json, "name");
+//    m_wxInfo.cityName = tempstr2;
+//    std::cout <<"cityName: " <<tempstr2 <<std::endl;
     tempstr2 = Clock::extract(json, "dt");
     m_wxInfo.wxDateTime = std::stoull(tempstr2);
     std::cout <<"wxDateTime: " <<tempstr2 <<std::endl;
@@ -393,7 +396,7 @@ void Clock::tick(bool &clockAdjusted, Settings::AlarmMode &reachedAlarmMode)
     if (m_tickCount == 0 && m_tm.tm_sec == 0)
     {
         reachedAlarmMode = checkIfAlarmReached();
-
+        int tempInt = 0;
         // Perform the daily synchronization if the time is reached.
         if (m_tm.tm_min == m_syncInfo.dailySyncMin && m_tm.tm_hour == m_syncInfo.dailySyncHour)
             syncNow();

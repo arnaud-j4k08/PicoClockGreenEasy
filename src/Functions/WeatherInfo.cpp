@@ -19,13 +19,11 @@ void WeatherInfo::renderFrame(
 {
     Clock::WxInfo info;
     clock().wxInfo(info);
-    std::string sourceText = 
-    uiText(static_cast<TextId>(
-    //    static_cast<int>(TextId::Rtc) + static_cast<int>(info.lastSyncSource)));  // I don't know what this was doing. 
-        static_cast<int>(TextId::Rtc)));
 
     std::string text;
     bool morning;
+    time_t WxTime = 0; // UTC time as unix time, local,  not considering DST
+    tm m_Wxtm = {}; // Current time as tm, not considering DST
     switch (m_entry)
     {
         case WxConditions:
