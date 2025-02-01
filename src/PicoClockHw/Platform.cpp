@@ -6,6 +6,10 @@
 void Platform::initStdIo()
 {
     stdio_init_all();
+
+    // Give the highest possible priority to the USB controller IRQ, to prevent the output buffer
+    // from getting full when using TRACE within an interrupt handler.
+    irq_set_priority(USBCTRL_IRQ, 0);
 }
 
 void Platform::runMainLoop()
