@@ -95,6 +95,7 @@ if (INCLUDE_WEATHER)
         add_compile_definitions(INCLUDE_WEATHER)
         target_sources(${PROJECT_NAME} PRIVATE
                 src/Functions/WeatherInfo.cpp
+                src/PicoClockHw/Weather.cpp
                 src/PicoClockHw/HttpRequest.cpp)
 endif()
 

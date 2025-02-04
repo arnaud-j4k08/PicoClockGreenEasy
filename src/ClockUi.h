@@ -8,6 +8,7 @@
 #include "Clock.h"
 #include "Settings.h"
 #include "Functions/AbstractFunction.h"
+#include "PicoClockHw/Weather.h"
 
 class Countdown;
 class Stopwatch;
@@ -33,6 +34,7 @@ private:
 
     Settings m_settings; // Must be initialized before m_clock as its constructor reads settings
     Clock m_clock;
+    Weather m_weather;   // kdkWx Add single instance of Weather class here.  
     bool m_forceRefresh = true;
     CyclicCounter m_blinkingCounter {Display::FRAME_RATE, -1};
     int m_editedValueIndex = 0;

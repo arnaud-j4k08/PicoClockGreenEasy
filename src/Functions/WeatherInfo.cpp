@@ -17,8 +17,9 @@ namespace
 void WeatherInfo::renderFrame(
     Bitmap &frame, int editedValueIndex, int blinkingCounter, bool fullRefresh) 
 {
-    Clock::WxInfo info;
-    clock().wxInfo(info);
+    Weather::WxInfo info;
+//    clock().wxInfo(info);
+    Weather().wxInfo(info);
 
     std::string text;
     bool morning;
@@ -57,8 +58,10 @@ void WeatherInfo::renderFrame(
             char tempString2[6];
             sprintf(tempString2, "%5.2f", info.windSpeed);
             if (settings().useCelsius)
+                {sprintf(tempString2, "%5.2f", info.windSpeed * 3.6);  // Convert from metres/sec to Km/Hour
                 text = 
-                uiText(TextId::WindSpeed) + tempString2 + " MPS";
+                uiText(TextId::WindSpeed) + tempString2 + " KM/H";
+                }
             else
                 text = 
                 uiText(TextId::WindSpeed) + tempString2 + " MPH";

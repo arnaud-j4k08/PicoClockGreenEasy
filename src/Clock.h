@@ -6,7 +6,7 @@
 #include "PicoClockHw/Ntp.h"
 #include "Settings.h"
 #include "Utils/CyclicCounter.h"
-#include "PicoClockHw/HttpRequest.h"            // kdkWx
+#include "PicoClockHw/HttpRequest.h"            // kdkWx To be removed once Weather.cpp is up and running
 
 #include <memory>
 #include <time.h>
@@ -31,7 +31,7 @@ public:
         int lastSyncDriftMs = 0;
     };
 
-// Structure for Weather information.                   //kdkWx
+// Structure for Weather information.                   //kdkWx  To be removed once Weather.cpp is up and running
     struct WxInfo                                       //kdkWx
     {                                                   //kdkWx
         std::string conditions = "No Data";             //kdkWx
@@ -58,7 +58,7 @@ public:
         m_rtcSync = SyncingToRtc;
     }
     
-    void tick(bool &clockAdjusted, Settings::AlarmMode &reachedAlarmMode);
+    void tick(bool &clockAdjusted, Settings::AlarmMode &reachedAlarmMode); // kdkWx new boolean for &updateWeather
     bool nextAlarm(int &weekday, int &hour, int &min) const;
 
     bool isAlarmOn() const
@@ -97,9 +97,9 @@ public:
     }
 
     void syncNow();
-    void syncWxNow();                                               // kdkWx  Intermediate stub.  Mirrors NTP
+    void syncWxNow();                                               // kdkWx  Intermediate stub.  Will move to Weather.cpp
     void syncInfo(SyncInfo &info);
-    void wxInfo(WxInfo &info);                                      // kdkWx  Used by WeatherInfo
+    void wxInfo(WxInfo &info);                                      // kdkWx  Used by WeatherInfo Will move to Weather.cpp
 
 private:
     struct Time
@@ -138,7 +138,7 @@ private:
     void startGpsSync();
     void onWifiConnectionFinished(bool success);
     void startWxSync();                             // kdkWx Called during Clock initialization, and periodic updates
-                                                    // kdkWx Also part of Weather subMenu Action bind in ClockUi
+                                                    // kdkWx Also part of Weather subMenu Action bind in ClockUi.  Moves to Weather.cpp
 
     enum RtcSync
     {
@@ -153,8 +153,8 @@ private:
         NtpWaitingForWifi,
         NtpInProgress,
         GpsInProgress,
-        WxWaitingForWifi,                           // kdkWx  
-        WxInProgress                                // kdkWx  
+        WxWaitingForWifi,                           // kdkWx  Remove after creation of Weather.cpp
+        WxInProgress                                // kdkWx  Remove after creation of Weather.cpp 
     };
 
     CyclicCounter m_tickCount;
@@ -168,19 +168,19 @@ private:
     ExternalSync m_extSync = Inactive;
 
     SyncInfo m_syncInfo;
-    WxInfo m_wxInfo;                                                         // kdkWx  pointer to WxInfo stucture
+    WxInfo m_wxInfo;                                                         // kdkWx  pointer to WxInfo stucture Move to Weather.cpp
 
-    std::string wifi_called_by;                                              // kdkWx  Used in onWifiConnectionFinished  
+    std::string wifi_called_by;                                              // kdkWx  Used in onWifiConnectionFinished Remove 
     DaylightSavingTime m_dst;
     time_t m_time = 0; // Current time as unix time, local (not UTC), not considering DST
     tm m_tm = {}; // Current time as tm, considering DST
 
-    HttpRequest m_httpReq;                                                   // kdkWx
-    void onRequestComplete(const std::string &content);                      // kdkWx
-    std::string extract(const std::string &json, const std::string &name);   // kdkWx
-    std::string extractStr(const std::string &json, const std::string &name); // kdkWx
-    std::string getCardinal(int degrees) const;                              // kdkWx   
+//    HttpRequest m_httpReq;                                                   // kdkWx Disable as we move to Weather.cpp
+    void onRequestComplete(const std::string &content);                      // kdkWx Turned to stub before removal
+    std::string extract(const std::string &json, const std::string &name);   // kdkWx Turned to stub before removal
+    std::string extractStr(const std::string &json, const std::string &name); // kdkWx Turned to stub before removal
+    std::string getCardinal(int degrees) const;                              // kdkWx Turned to stub before removal   
 
     bool m_clockAdjusted = true;
-    bool m_wx = true;                                                        // kdkWx  Boolean to test execution of Weather functions
+    bool m_wx = true;                                                        // kdkWx  Keep Boolean to test execution of Weather functions
 };

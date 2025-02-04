@@ -1,6 +1,7 @@
 #pragma once
 //  This is a copy of SyncInfo that has been modified to display Weather Information  kdkWx
 #include "AbstractFunction.h"
+#include "PicoClockHw/Weather.h"
 #include <time.h>
 
 class WeatherInfo : public AbstractFunction
@@ -19,7 +20,7 @@ public:
         WxName,  // Not currently supported in OpenWeatherMap 3.0 API
         WxDateTime,
     };
-    WeatherInfo(ClockUi *clockUi, Entry entry) : AbstractFunction(clockUi), m_entry(entry)
+    WeatherInfo(ClockUi *clockUi, Entry entry, Weather *weather) : AbstractFunction(clockUi), m_entry(entry)
     {}
 
 private:
