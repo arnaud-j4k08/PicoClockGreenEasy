@@ -59,7 +59,7 @@ void WeatherInfo::renderFrame(
             if (settings().useCelsius)
                 {sprintf(tempString2, "%5.2f", info.windSpeed * 3.6);  // Convert from metres/sec to Km/Hour
                 text = 
-                uiText(TextId::WindSpeed) + tempString2 + " KM/H";
+                uiText(TextId::WindSpeed) + tempString2 + " KMH";
                 }
             else
                 text = 
