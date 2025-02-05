@@ -53,6 +53,15 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
     m_curFuncIdx = m_settings.get().function;
     initHorizScrolling(); // If the selected function needs to scroll
 
+    #ifdef INCLUDE_WEATHER                                                    // Is Weather configured?
+        m_wx = true;                                                          // Yes, set flag for weather processing                                
+    #else                                                                 
+        m_wx = false;                                                         // No, set flag to bypass weather processing
+    #endif                                                                      
+
+    if (OPEN_WEATHER_MAP_URL == "" || WIFI_SSID == "" )                       // Ensure that weather URL and Wifi
+        m_wx = false;                                                         // defined.  Bypass weather processing if not.  
+
     TRACE << "Add root level functions";
     addFunction<Time>(Time::HourMinSec);
     int hourMinBarFuncIdx = addFunction<Time>(Time::HourMinBar);
@@ -98,17 +107,17 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
     syncSubmenu->addFunction<WifiStatus>(this);
 
     #ifdef INCLUDE_WEATHER
-    TRACE << "Add functions of the Wx submenu";                                 // kdkWx
-    //  wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxName);         // kdkWx Name not supported by OpenWeatherMap 3.0 API
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxConditions, &m_weather);       // kdkWx Index value = 0
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxTemperature, &m_weather);      // kdkWx Index value = 1
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWind, &m_weather);             // kdkWx Index value = 2
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWindDirection, &m_weather);    // kdkWx Index value = 3
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxHumidity, &m_weather);         // kdkWx Index value = 4
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxPressure, &m_weather);         // kdkWx Index value = 5
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunrise, &m_weather);          // kdkWx Index value = 6
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunset, &m_weather);           // kdkWx Index value = 7
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxDateTime, &m_weather);         // kdkWx Index value = 8
+    TRACE << "Add functions of the Wx submenu"; 
+    //  wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxName);                     // Name not supported by OpenWeatherMap 3.0 API
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxConditions, &m_weather);       // Index value = 0
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxTemperature, &m_weather);      // Index value = 1
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWind, &m_weather);             // Index value = 2
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWindDirection, &m_weather);    // Index value = 3
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxHumidity, &m_weather);         // Index value = 4
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxPressure, &m_weather);         // Index value = 5
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunrise, &m_weather);          // Index value = 6
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunset, &m_weather);           // Index value = 7
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxDateTime, &m_weather);         // Index value = 8
     wxSubmenu->addFunction<Action>(this, uiText(TextId::SyncWxNow), std::bind(&Weather::syncWxNow, &m_weather));
     #endif
 
@@ -152,8 +161,9 @@ void ClockUi::onFrameCallback()
     // Make the clock and some functions tick
     bool clockAdjusted = false;
     bool updateWeaterNow = false;   // kdkWx new boolean to check whether startWxSync needs to be called
+    int tempInt;
     Settings::AlarmMode reachedAlarmMode = Settings::AlarmMode::Off;
-    m_clock.tick(clockAdjusted, reachedAlarmMode);  // kdkWx add new boolean here
+    m_clock.tick(clockAdjusted, reachedAlarmMode);  
     m_countdownFunc->tick();
     m_stopwatchFunc->tick();
 
@@ -170,8 +180,19 @@ void ClockUi::onFrameCallback()
 
     adjustBrightness();
 
-    if (m_clock.tickCount() == 0)
+    if (m_clock.tickCount() == 0)  
     {
+#ifdef INCLUDE_WEATHER
+        if (m_clock.get().tm_sec==0)
+        {
+            tempInt = (m_clock.get().tm_min + 1) % 30; // If at top or bottom of hour, update the weather information
+            if (tempInt == 0 && m_wx)
+                {  
+                TRACE << "ClockUi::onFrameCallback, Periodic Update of Weather Information \n";
+                m_weather.syncWxNow();
+                }
+        }     
+#endif           
         if (m_alarmRinging != Settings::AlarmMode::Off)
         {
             m_ringingForSecs++;
@@ -539,7 +560,7 @@ void ClockUi::renderHorizScrollingText(
 
         if (editedValue.empty() || m_blinkingCounter < AbstractFunction::BLINKING_DISAPPEAR_FRAME)
         {
-            TRACE << "Draw the scrolling text:" << leftText + editedValue + rightText;
+            // TRACE << "Draw the scrolling text:" << leftText + editedValue + rightText;
             frame.drawText(-m_horizScrollPos, 0, leftText + editedValue + rightText);
         } else
         {

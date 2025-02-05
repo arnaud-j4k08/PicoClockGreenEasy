@@ -18,8 +18,7 @@ void WeatherInfo::renderFrame(
     Bitmap &frame, int editedValueIndex, int blinkingCounter, bool fullRefresh) 
 {
     Weather::WxInfo info;
-//    clock().wxInfo(info);
-    Weather().wxInfo(info);
+    m_weather->wxInfo(info);
 
     std::string text;
     bool morning;

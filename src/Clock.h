@@ -6,7 +6,6 @@
 #include "PicoClockHw/Ntp.h"
 #include "Settings.h"
 #include "Utils/CyclicCounter.h"
-#include "PicoClockHw/HttpRequest.h"            // kdkWx To be removed once Weather.cpp is up and running
 
 #include <memory>
 #include <time.h>
@@ -31,22 +30,6 @@ public:
         int lastSyncDriftMs = 0;
     };
 
-// Structure for Weather information.                   //kdkWx  To be removed once Weather.cpp is up and running
-    struct WxInfo                                       //kdkWx
-    {                                                   //kdkWx
-        std::string conditions = "No Data";             //kdkWx
-        float ctemp = 0;                                //kdkWx
-        int pressure = 0;                               //kdkWx
-        int humidity = 0;                               //kdkWx
-        float windSpeed = 0;                            //kdkWx
-        int windDegree = 0;                             //kdkWx
-        std::string windCardinal = "N";                 //kdkWx
-        uint64_t sunRise = 0;                           //kdkWx
-        uint64_t sunSet = 0;                            //kdkWx
-        uint64_t wxTimezone = 0;                        //kdkWx
-        std::string cityName = "No Data";               //kdkWx  Not currently supported by OpenWeatherMap 3.0 API
-        uint64_t wxDateTime = 0;                        //kdkWx
-    };                                                  //kdkWx
 
     // Beware that the object keeps a reference on settings, so it must exists at least as long as
     // the object.
@@ -97,9 +80,7 @@ public:
     }
 
     void syncNow();
-    void syncWxNow();                                               // kdkWx  Intermediate stub.  Will move to Weather.cpp
     void syncInfo(SyncInfo &info);
-    void wxInfo(WxInfo &info);                                      // kdkWx  Used by WeatherInfo Will move to Weather.cpp
 
 private:
     struct Time
@@ -137,8 +118,6 @@ private:
     void startNtpSync();
     void startGpsSync();
     void onWifiConnectionFinished(bool success);
-    void startWxSync();                             // kdkWx Called during Clock initialization, and periodic updates
-                                                    // kdkWx Also part of Weather subMenu Action bind in ClockUi.  Moves to Weather.cpp
 
     enum RtcSync
     {
@@ -153,8 +132,6 @@ private:
         NtpWaitingForWifi,
         NtpInProgress,
         GpsInProgress,
-        WxWaitingForWifi,                           // kdkWx  Remove after creation of Weather.cpp
-        WxInProgress                                // kdkWx  Remove after creation of Weather.cpp 
     };
 
     CyclicCounter m_tickCount;
@@ -168,19 +145,11 @@ private:
     ExternalSync m_extSync = Inactive;
 
     SyncInfo m_syncInfo;
-    WxInfo m_wxInfo;                                                         // kdkWx  pointer to WxInfo stucture Move to Weather.cpp
 
-    std::string wifi_called_by;                                              // kdkWx  Used in onWifiConnectionFinished Remove 
     DaylightSavingTime m_dst;
     time_t m_time = 0; // Current time as unix time, local (not UTC), not considering DST
     tm m_tm = {}; // Current time as tm, considering DST
 
-//    HttpRequest m_httpReq;                                                   // kdkWx Disable as we move to Weather.cpp
-    void onRequestComplete(const std::string &content);                      // kdkWx Turned to stub before removal
-    std::string extract(const std::string &json, const std::string &name);   // kdkWx Turned to stub before removal
-    std::string extractStr(const std::string &json, const std::string &name); // kdkWx Turned to stub before removal
-    std::string getCardinal(int degrees) const;                              // kdkWx Turned to stub before removal   
-
     bool m_clockAdjusted = true;
-    bool m_wx = true;                                                        // kdkWx  Keep Boolean to test execution of Weather functions
+    
 };
