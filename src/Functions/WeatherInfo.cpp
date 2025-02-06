@@ -23,7 +23,7 @@ void WeatherInfo::renderFrame(
     std::string text;
     bool morning;
     time_t WxTime = 0; // UTC time as unix time, local,  not considering DST
-    tm m_Wxtm = {}; // Current time as tm, not considering DST
+    tm Wxtm = {}; // Current time as tm, not considering DST
     switch (m_entry)
     {
         case WxConditions:
@@ -71,28 +71,28 @@ void WeatherInfo::renderFrame(
             break;          
         case WxSunrise:   
             WxTime = info.sunRise + info.wxTimezone;  //  Remove the UTC offset in seconds.  This gives us local time
-            m_Wxtm = *localtime(&WxTime); 
+            Wxtm = *localtime(&WxTime); 
 
             text =
-                uiText(TextId::Sunrise) + timeToString(m_Wxtm, morning);
+                uiText(TextId::Sunrise) + timeToString(Wxtm, morning);
             putAmPmIndicators(frame, morning);
             break;
         case WxDateTime:   
             WxTime = info.wxDateTime + info.wxTimezone;  //  Remove the UTC offset in seconds.  This gives local time
-            m_Wxtm = *localtime(&WxTime); 
+            Wxtm = *localtime(&WxTime); 
 
             text =
-                uiText(TextId::LastUpdate) + timeToString(m_Wxtm, morning) +
-                " " + dateToString(m_Wxtm); 
+                uiText(TextId::LastUpdate) + timeToString(Wxtm, morning) +
+                " " + dateToString(Wxtm); 
             putAmPmIndicators(frame, morning);
 
             break;            
         case WxSunset:   
             WxTime = info.sunSet + info.wxTimezone;  //  Remove the UTC offset in seconds.  This gives us local time
-            m_Wxtm = *localtime(&WxTime); 
+            Wxtm = *localtime(&WxTime); 
 
             text =
-                uiText(TextId::Sunset) + timeToString(m_Wxtm, morning);
+                uiText(TextId::Sunset) + timeToString(Wxtm, morning);
             putAmPmIndicators(frame, morning);
             break;
         case WxName:

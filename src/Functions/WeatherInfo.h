@@ -1,5 +1,4 @@
 #pragma once
-//  This is a copy of SyncInfo that has been modified to display Weather Information  kdkWx
 #include "AbstractFunction.h"
 #include "Weather.h"
 #include <time.h>
@@ -25,6 +24,7 @@ public:
     {}
 
 private:
+
     void renderFrame(
         Bitmap &frame, int editedValueIndex, int blinkingCounter, bool fullRefresh) override;
     int valueCount() const override

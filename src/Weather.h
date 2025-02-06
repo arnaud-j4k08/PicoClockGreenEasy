@@ -33,14 +33,6 @@ private:
     void onWifiConnectionFinished(bool success);
     void startWxSync();                                                     // Called during Clock initialization, and periodic updates
 
-    enum WeatherSync
-    {
-        Inactive,
-        WxWaitingForWifi,                            
-        WxInProgress                                  
-    };
-
-    WeatherSync m_wxSync = Inactive;
     WxInfo m_wxInfo;                                                        // pointer to WxInfo stucture
 
     time_t m_time = 0; // Current time as unix time, local (not UTC), not considering DST
@@ -54,5 +46,5 @@ private:
     std::string extractStr(const std::string &json, const std::string &name); 
     std::string getCardinal(int degrees) const;                                 
 
-    bool m_wx = true;                                                        // kdkWx  Boolean to test execution of Weather functions
+    bool m_wx = true;                                                        // Boolean to test execution of Weather functions
 };

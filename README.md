@@ -142,6 +142,7 @@ This is the full definition of the menu structure. Use the "enter/set" button to
 - (if auto light is off) options &rarr; set auto scroll &rarr; set time format &rarr; set date format &rarr; set hourly chime &rarr; set auto light -> set brightness
 - (if auto light is on) options &rarr; set auto scroll &rarr; set time format &rarr; set date format &rarr; set hourly chime &rarr; set auto light -> set dark brightness -> set dim brightness -> set max brightness
 - weather (optional): enter submenu
+    - update weather now (issue call to OpenWeatherMap API for latest weather information)
     - conditions (clear sky, overcast, rain, etc.)
     - temp (display current temperature in Celsius/Fahrenheit per temperature toggle and OpenWeatherMap selection)
     - wind speed (display current wind speed in mph/kmh per temperature toggle and OpenWeatherMap selection)
@@ -151,7 +152,6 @@ This is the full definition of the menu structure. Use the "enter/set" button to
     - sunrise (display sunrise in local time)
     - sunset (display sunset in local time)
     - last update time (show timestamp of last weather update)
-    - update weather now (issue call to OpenWeatherMap API for latest weather information)
     - exit: leave submenu
 
 
@@ -183,12 +183,7 @@ I tested this feature using a NEO-6M GPS module. It should work with other modul
 
 When running the firmware, go to the "clock sync" submenu and set the sync source to "GPS".
 
-### Using optional Weather syncronization and display
 
-The optional display of weather information requires a Pico W for wireless connection, a configured WiFi connection with SSID and Password, and a no-cost (but valid credit card required) subscription to the OpenWeatherMap.org, "One Call 3.0 API".  It requires modification to the UserConfig.cmake file, and compilation of the source code to create a .uf2 file which is loaded to the Pico W.  Please review the information regarding the "One Call 3.0 API" on the OpenWeatherMap.org website.  The API allows up to 1000 free calls per day, but requires a valid credit card subsciption to pay for the number of calls greater than 1000.  The optional periodic weather updates will use less than 50 calls per day, unless the source code is modified.  The use of the Update Weather Now menu option will also use a "One Call 3.0 API" call.  You have the ability to limit the number of calls per day through the OpenWeatherMap.org website.  By subscribing to the 'One Call 3.0 API", your account will be provided with an API (appid) key which must be configured in the OPEN_WEATHER_MAP_URL field in the UserConfig.cmake file. You will also need to provide the longitude and latitude of the location representing the weather information.
-
-Please review the comments in the UserConfig.cmake file for more information regarding the configuration of the weather option.
- 
 ## Configuring daylight saving time
 
 The clock can be configured to automatically observe daylight saving time. For the moment, this requires a build environment, as the UTC offset and location need to be configured at build time. Currently, only the European Union and United States variants of daylight saving time are supported.
@@ -221,3 +216,9 @@ With auto light, the brightness is automatically adjusted depending on the ambie
 - press "set"
 - if you need to adjust the brightness in a daylight conditions, you can use the "up" or "down" buttons to set the "max brightness" percentage
 - press "set"
+
+## Using optional Weather syncronization and display
+
+The optional display of weather information requires a Pico W for wireless connection, a configured WiFi connection with SSID and Password, and a no-cost (but valid credit card required) subscription to the OpenWeatherMap.org, "One Call 3.0 API".  It requires modification to the UserConfig.cmake file, and compilation of the source code to create a .uf2 file which is loaded to the Pico W.  Please review the information regarding the "One Call 3.0 API" on the OpenWeatherMap.org website.  The API allows up to 1000 free calls per day, but requires a valid credit card subsciption to pay for the number of calls greater than 1000.  The optional periodic weather updates will use less than 50 calls per day, unless the source code is modified.  The use of the Update Weather Now menu option will also use a "One Call 3.0 API" call.  You have the ability to limit the number of calls per day through the OpenWeatherMap.org website.  By subscribing to the 'One Call 3.0 API", your account will be provided with an API (appid) key which must be configured in the OPEN_WEATHER_MAP_URL field in the UserConfig.cmake file. You will also need to provide the longitude and latitude of the location representing the weather information.
+
+Please review the comments in the UserConfig.cmake file for more information regarding the configuration of the weather option.

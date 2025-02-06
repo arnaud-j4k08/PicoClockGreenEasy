@@ -97,6 +97,10 @@ if (INCLUDE_WEATHER)
                 src/Functions/WeatherInfo.cpp
                 src/Weather.cpp
                 src/PicoClockHw/HttpRequest.cpp)
+        target_link_libraries(${PROJECT_NAME}
+                pico_lwip_http
+                pico_lwip_mbedtls)
+
 endif()
 
 if (PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PICO_BOARD=pico_w
@@ -104,11 +108,9 @@ if (PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PI
         target_sources(${PROJECT_NAME} PRIVATE
                 src/PicoClockHw/Ntp.cpp 
                 src/PicoClockHw/Wifi.cpp)
-        target_link_libraries(${PROJECT_NAME} 
-                pico_cyw43_arch_lwip_threadsafe_background
-                pico_lwip_http
-                pico_lwip_mbedtls
-                pico_mbedtls)
+        target_link_libraries(${PROJECT_NAME}
+                pico_mbedtls # If placed in INCLUDE_WEATHER section, get compile errors if INCLUDE_WEATER is "0"
+                pico_cyw43_arch_lwip_threadsafe_background)
 
         # Ignore warnings from lwip code
         set_source_files_properties(
@@ -127,7 +129,6 @@ pico_add_extra_outputs(${PROJECT_NAME})
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
 pico_enable_stdio_uart(${PROJECT_NAME} 0)
 
-# TODO: change this so that the lwip and mbedtls configs do not have to be at the root
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src
     ${CMAKE_CURRENT_LIST_DIR}/src/PicoClockHw/Config

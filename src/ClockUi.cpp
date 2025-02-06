@@ -15,7 +15,9 @@
 #include "Functions/Stopwatch.h"
 #include "Functions/Submenu.h"
 #include "Functions/SyncInfo.h"
-#include "Functions/WeatherInfo.h"          // kdkWx
+#ifdef INCLUDE_WEATHER
+#include "Functions/WeatherInfo.h"
+#endif          
 #include "Functions/SyncNow.h"
 #include "Functions/SyncSource.h"
 #include "Functions/Temperature.h"
@@ -77,9 +79,9 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
     Submenu *syncSubmenu = 
         addFunctionAndReturnPtr<Submenu>(uiText(TextId::Sync), &m_rootMenu);
     #ifdef INCLUDE_WEATHER    
-    Submenu *wxSubmenu =                                                            // kdkWx
-        addFunctionAndReturnPtr<Submenu>(uiText(TextId::Weather), &m_rootMenu);     // kdkWx
-        m_wxMenu = wxSubmenu->menu();                                               // kdkWx  For use in AutoScroll
+    Submenu *wxSubmenu =                                                            
+        addFunctionAndReturnPtr<Submenu>(uiText(TextId::Weather), &m_rootMenu);     
+        m_wxMenu = wxSubmenu->menu();                                               // Save for use with AutoScroll
     #endif        
     addFunction<Options>();
 
@@ -109,16 +111,17 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
     #ifdef INCLUDE_WEATHER
     TRACE << "Add functions of the Wx submenu"; 
     //  wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxName);                     // Name not supported by OpenWeatherMap 3.0 API
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxConditions, &m_weather);       // Index value = 0
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxTemperature, &m_weather);      // Index value = 1
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWind, &m_weather);             // Index value = 2
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWindDirection, &m_weather);    // Index value = 3
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxHumidity, &m_weather);         // Index value = 4
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxPressure, &m_weather);         // Index value = 5
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunrise, &m_weather);          // Index value = 6
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunset, &m_weather);           // Index value = 7
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxDateTime, &m_weather);         // Index value = 8
-    wxSubmenu->addFunction<Action>(this, uiText(TextId::SyncWxNow), std::bind(&Weather::syncWxNow, &m_weather));
+    wxSubmenu->addFunction<Action>(this, uiText(TextId::SyncWxNow), std::bind(&Weather::syncWxNow, &m_weather)); // Index value = 0
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxConditions, &m_weather);       // Index value = 1
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxTemperature, &m_weather);      // Index value = 2
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWind, &m_weather);             // Index value = 3
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWindDirection, &m_weather);    // Index value = 4
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxHumidity, &m_weather);         // Index value = 5
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxPressure, &m_weather);         // Index value = 6
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunrise, &m_weather);          // Index value = 7
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunset, &m_weather);           // Index value = 8
+    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxDateTime, &m_weather);         // Index value = 9
+    
     #endif
 
     // Remember the last used time function in case auto scroll is enabled.
@@ -160,7 +163,6 @@ void ClockUi::onFrameCallback()
 {
     // Make the clock and some functions tick
     bool clockAdjusted = false;
-    bool updateWeaterNow = false;   // kdkWx new boolean to check whether startWxSync needs to be called
     int tempInt;
     Settings::AlarmMode reachedAlarmMode = Settings::AlarmMode::Off;
     m_clock.tick(clockAdjusted, reachedAlarmMode);  
@@ -243,41 +245,41 @@ void ClockUi::onFrameCallback()
             }
         }
 
-// duplicating autoscroll for Weather submenu scrolling                                             // kdkWx
-                                                                                                    // kdkWx
-        if (m_settings.get().autoScroll &&                                                          // kdkWx
-            m_editedValueIndex == NoEditing &&                                                      // kdkWx
-            m_currentMenu == m_wxMenu &&                                                            // kdkWx Are we in the Weather menu?     
-            m_secondsWithoutUserInput >= AUTO_SCROLL_DELAY_SEC)                                     // kdkWx
-        {                                                                                           // kdkWx
-            switch(m_clock.get().tm_sec)                                                            // kdkWx
-            {                                                                                       // kdkWx
-                case 0:                                                                             // kdkWx
-                    m_curFuncIdx = m_WxLastUpdateFuncIdx;  // start with Update time   index of 9   // kdkWx
-                    startVertScrolling(-1);                                                         // kdkWx
-                    break;                                                                          // kdkWx
-                                                                                                    // kdkWx
-                case 12:      // 12 seconds                                                         // kdkWx
-                    m_curFuncIdx = m_WxTemperatureFuncIdx;    // The temperature index of 2         // kdkWx
-                    startVertScrolling(-1);                                                         // kdkWx
-                    break;                                                                          // kdkWx
-                                                                                                    // kdkWx
-                case 24:  // 24 seconds                                                             // kdkWx
-                    m_curFuncIdx = m_WxWindFuncIdx;  // Then the Wind speed index of 3              // kdkWx
-                    startVertScrolling(-1);                                                         // kdkWx
-                    break;                                                                          // kdkWx
-                                                                                                    // kdkWx
-                case 36:  // 36 seconds                                                             // kdkWx
-                    m_curFuncIdx = m_WxWindDirectionFuncIdx; // Then the wind direction index of 4  // kdkWx
-                    startVertScrolling(-1);                                                         // kdkWx
-                    break;                                                                          // kdkWx
-                                                                                                    // kdkWx
-                case 48:  // 48 seconds                                                             // kdkWx
-                    m_curFuncIdx = m_WxConditionsFuncIdx;  // Then the conditions index of 1        // kdkWx
-                    startVertScrolling(-1);                                                         // kdkWx
-                    break;                                                                          // kdkWx
-            }                                                                                       // kdkWx
-        }                                                                                           // kdkWx
+// duplicating autoscroll for Weather submenu scrolling                                             
+ 
+        if (m_settings.get().autoScroll &&                                                         
+            m_editedValueIndex == NoEditing &&                                                      
+            m_currentMenu == m_wxMenu &&                                                            // Are we in the Weather menu?     
+            m_secondsWithoutUserInput >= AUTO_SCROLL_DELAY_SEC)                                     
+        {                                                                                           
+            switch(m_clock.get().tm_sec)                                                            
+            {                                                                                       
+                case 0:                                                                             
+                    m_curFuncIdx = m_WxLastUpdateFuncIdx;  // start with Update time   index of 9   
+                    startVertScrolling(-1);                                                         
+                    break;                                                                          
+ 
+                case 12:      // 12 seconds                                                         
+                    m_curFuncIdx = m_WxTemperatureFuncIdx;    // The temperature index of 2         
+                    startVertScrolling(-1);                                                         
+                    break;                                                                          
+
+                case 24:  // 24 seconds                                                             
+                    m_curFuncIdx = m_WxWindFuncIdx;  // Then the Wind speed index of 3              
+                    startVertScrolling(-1);                                                         
+                    break;                                                                          
+ 
+                case 36:  // 36 seconds                                                             
+                    m_curFuncIdx = m_WxWindDirectionFuncIdx; // Then the wind direction index of 4  
+                    startVertScrolling(-1);                                                         
+                    break;                                                                          
+
+                case 48:  // 48 seconds                                                             
+                    m_curFuncIdx = m_WxConditionsFuncIdx;  // Then the conditions index of 1        
+                    startVertScrolling(-1);                                                         
+                    break;                                                                          
+            }                                                                                       
+        }                                                                                           
 
     }
 

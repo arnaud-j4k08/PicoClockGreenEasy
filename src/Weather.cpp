@@ -24,7 +24,6 @@ Weather::Weather()
 
 void Weather::syncWxNow()                                                      // Called from ClockUi
 {                         
-    m_wxSync = WxInProgress;                                                   
     startWxSync();                                                              // Call the OpenWeatherMap API
 }
 
@@ -40,7 +39,6 @@ void Weather::startWxSync()
         if (Wifi::connectAsync(std::bind(&Weather::onWifiConnectionFinished, this, _1)))
         {
             TRACE << "Wifi::connectAsync started";                             
-            m_wxSync = WxWaitingForWifi;                                       
         } 
     } else                                                                       
     {                                                                            
@@ -57,7 +55,6 @@ void Weather::startWxSync()
                         m_httpReq.start("api.openweathermap.org", 443, OPEN_WEATHER_MAP_URL);
                 });
         TRACE << "In Weather::startWxSync, after calling m_httpReq.start \n";     
-            m_wxSync = WxInProgress;                                            // Update sync in progress for other processes
         } 
     }  
 }  
@@ -67,11 +64,10 @@ void Weather::onRequestComplete(const std::string &content)                     
 {   
     std::string tempstr2;                                                        // Used in populating WxInfo
     int tempInt = 0;                                                             // Used in populating WxInfo
-    std::string json;                                                            // Holds json string in populating WxInfo                                                                            // kdkWx Populate WxInfo with result
+    std::string json;                                                            // Holds json string in populating WxInfo 
     TRACE << "In Weather::onRequestComplete: \n";
     std::cout << m_httpReq.content() <<std::endl;
     json = m_httpReq.content();                                                  // Copy result string from receive buffer
-    m_wxSync = Inactive;                                                         // Allow new synchronizations
     if (json.size() < 300)                                                       // Not big enough, must be some sort of error
         return;
 
@@ -170,16 +166,12 @@ void Weather::onWifiConnectionFinished(bool success)
             TRACE << "Wifi connected, start Weather request";
             startWxSync();
             TRACE << "WX Request started";
-            m_wxSync = WxInProgress;
         }
 
-        if (!m_wx)
-            m_wxSync = Inactive;
 
     } else
     {
         TRACE << "Connection failed";
-        m_wxSync = Inactive;
     }
 }
 

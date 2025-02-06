@@ -41,7 +41,7 @@ public:
         m_rtcSync = SyncingToRtc;
     }
     
-    void tick(bool &clockAdjusted, Settings::AlarmMode &reachedAlarmMode); // kdkWx new boolean for &updateWeather
+    void tick(bool &clockAdjusted, Settings::AlarmMode &reachedAlarmMode); 
     bool nextAlarm(int &weekday, int &hour, int &min) const;
 
     bool isAlarmOn() const

@@ -66,20 +66,20 @@ namespace
             "NTP",
             "GPS",
 
-        // Weather related Text.  Associated with WxInfo structure kdkWx
-            "Weather",                  // kdkWx
-            "Conditions: ",             // kdkWx
-            "Temp: ",                   // kdkWx
-            "Pressure: ",               // kdkWx
-            "Humidity: ",               // kdkWx
-            "Wind Speed: ",             // kdkWx
-            "Wind Dir: ",               // kdkWx
-            "Wind: ",                   // kdkWx
-            "Sunrise: ",                // kdkWx
-            "Sunset: ",                 // kdkWx
-            "Weather for: ",            // kdkWx
-            "Update Weather Now",       // kdkWx
-            "Last Update: ",            // kdkWx            
+        // Weather related Text.  Associated with WxInfo structure 
+            "Weather",                  
+            "Conditions: ",             
+            "Temp: ",                   
+            "Pressure: ",              
+            "Humidity: ",               
+            "Wind Speed: ",             
+            "Wind Dir: ",               
+            "Wind: ",                   
+            "Sunrise: ",                
+            "Sunset: ",                 
+            "Weather for: ",            
+            "Update Weather Now",       
+            "Last Update: ",                        
     };
 }
 

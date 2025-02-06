@@ -74,20 +74,20 @@ enum class TextId
     Ntp,
     Gps,
 
-    // Weather related Text.  Associated with WxInfo structure kdkWx
-    Weather,        // kdkWx
-    Conditions,     // kdkWx
-    Temperature,    // kdkWx
-    Pressure,       // kdkWx
-    Humidity,       // kdkWx
-    WindSpeed,      // kdkWx
-    WindDir,        // kdkWx
-    WindCard,       // kdkWx
-    Sunrise,        // kdkWx
-    Sunset,         // kdkWx
-    CityName,       // kdkWx
-    SyncWxNow,      // kdkWx
-    LastUpdate,     // kdkWx
+    // Weather related Text.  Associated with WxInfo structure 
+    Weather,        
+    Conditions,     
+    Temperature,    
+    Pressure,       
+    Humidity,       
+    WindSpeed,      
+    WindDir,        
+    WindCard,       
+    Sunrise,        
+    Sunset,         
+    CityName,       
+    SyncWxNow,      
+    LastUpdate,     
 
 
     TextCount
