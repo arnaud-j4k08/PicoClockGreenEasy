@@ -92,6 +92,9 @@ if (DISPLAY_PIO)
 endif()
 
 if (INCLUDE_WEATHER)
+        if (NOT PICO_CYW43_SUPPORTED) # set by the pico_.cmake file of the Pico SDK when PICO_BOARD=pico_w
+                message(FATAL_ERROR "INCLUDE__WEATHER requires PICO_CYW43_SUPPORTED")
+        endif()
         add_compile_definitions(INCLUDE_WEATHER)
         target_sources(${PROJECT_NAME} PRIVATE
                 src/Functions/WeatherInfo.cpp
@@ -99,7 +102,16 @@ if (INCLUDE_WEATHER)
                 src/PicoClockHw/HttpRequest.cpp)
         target_link_libraries(${PROJECT_NAME}
                 pico_lwip_http
-                pico_lwip_mbedtls)
+                pico_lwip_mbedtls
+                pico_mbedtls)
+        # Ignore warnings from lwip code
+        set_source_files_properties(
+                        ${PICO_LWIP_PATH}/src/apps/altcp_tls/altcp_tls_mbedtls.c
+                        ${PICO_LWIP_PATH}/src/apps/altcp_tls/altcp_proxyconnect.c
+                        ${PICO_LWIP_PATH}/src/apps/http/altcp_proxyconnect.c
+                        PROPERTIES
+                        COMPILE_OPTIONS "-Wno-unused-result;-Wno-incompatible-pointer-types"
+                        )        
 
 endif()
 
@@ -109,17 +121,8 @@ if (PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PI
                 src/PicoClockHw/Ntp.cpp 
                 src/PicoClockHw/Wifi.cpp)
         target_link_libraries(${PROJECT_NAME}
-                pico_mbedtls # If placed in INCLUDE_WEATHER section, get compile errors if INCLUDE_WEATER is "0"
                 pico_cyw43_arch_lwip_threadsafe_background)
-
-        # Ignore warnings from lwip code
-        set_source_files_properties(
-                ${PICO_LWIP_PATH}/src/apps/altcp_tls/altcp_tls_mbedtls.c
-                ${PICO_LWIP_PATH}/src/apps/altcp_tls/altcp_proxyconnect.c
-                ${PICO_LWIP_PATH}/src/apps/http/altcp_proxyconnect.c
-                PROPERTIES
-                COMPILE_OPTIONS "-Wno-unused-result;-Wno-incompatible-pointer-types"
-                )                
+         
 endif()
 
 # create map/bin/hex/uf2 file in addition to ELF.

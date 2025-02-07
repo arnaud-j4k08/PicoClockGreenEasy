@@ -128,12 +128,12 @@ void Gps::onMessage(const std::string &msg)
     std::string nmeaLatitude;
     if (!std::getline(stream, nmeaLatitude, ','))
         return;
-    //TRACE << "NMEA Latitude:" << nmeaLatitude;
+    TRACE << "NMEA Latitude:" << nmeaLatitude;
     
     std::string latitudeOrientation;
     if (!std::getline(stream, latitudeOrientation, ','))
         return;
-    //TRACE << "Latitude Orientation:" << latitudeOrientation;
+    TRACE << "Latitude Orientation:" << latitudeOrientation;
 
     latdecimal = nmea_to_deg(nmeaLatitude, latitudeOrientation);
     TRACE << "Decimal Latitude:" << latdecimal;
@@ -141,12 +141,12 @@ void Gps::onMessage(const std::string &msg)
     std::string nmeaLongitude;
     if (!std::getline(stream, nmeaLongitude, ','))
         return;
-    //TRACE << "NMEA Longitude:" << nmeaLongitude;
+    TRACE << "NMEA Longitude:" << nmeaLongitude;
     
     std::string longitudeOrientation;
     if (!std::getline(stream, longitudeOrientation, ','))
         return;
-    //TRACE << "Longitude Orientation:" << latitudeOrientation;
+    TRACE << "Longitude Orientation:" << latitudeOrientation;
 
     londecimal = nmea_to_deg(nmeaLongitude, longitudeOrientation);
     TRACE << "Decimal Longitude:" << londecimal;

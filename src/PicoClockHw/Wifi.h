@@ -57,7 +57,7 @@ inline bool Wifi::connectBlocking()
     return false;
 }
 
-inline bool Wifi::connectAsync()
+inline bool Wifi::connectAsync(const std::function<void(bool success)> &)
 {
     return false;
 }

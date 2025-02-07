@@ -56,9 +56,11 @@
 #define LWIP_STATS_DISPLAY          1
 #endif
 
+#ifdef INCLUDE_WEATHER
 #define LWIP_ALTCP                  1
 #define LWIP_ALTCP_TLS              1
 #define LWIP_ALTCP_TLS_MBEDTLS      1
+#endif
 
 #define ETHARP_DEBUG                LWIP_DBG_OFF
 #define NETIF_DEBUG                 LWIP_DBG_OFF
