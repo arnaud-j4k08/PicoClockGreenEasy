@@ -19,7 +19,7 @@ public:
         WxName,  // Not currently supported in OpenWeatherMap 3.0 API
         WxDateTime,
     };
-    Weather *m_weather;
+    
     WeatherInfo(ClockUi *clockUi, Entry entry, Weather *weather) : AbstractFunction(clockUi), m_entry(entry), m_weather(weather)
     {}
 
@@ -36,5 +36,6 @@ private:
     std::string dateToString(const tm &tm) const;
 
     Entry m_entry;
+    Weather *m_weather;
 
 };

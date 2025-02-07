@@ -59,7 +59,7 @@ add_compile_definitions(
 #     from metres/sec to kilometres/hour.  Please review the OpenWeatherMap.org website for further information.
 
 # In addition to the OPEN_WEATHER_MAP_URL, the weather option requires a working Wifi connection. WIFI_SSID and WIFI_PASSWORD must be 
-# configured.  Each value is enclosed by escaped double quotation marks at the beginning and end of the string: \#
+# configured.  Each value is enclosed by escaped double quotation marks at the beginning and end of the string: \"
 # For example, to specify your WIFI_SSID as MyWifi, the value would appear as WIFI_SSID=\"MyWifi\" 
 # A null string is represented by \"\". If either the WIFI_SSID or WIFI_PASSWORD are configured as a null string, weather updates will
 # not be attempted, although the menu will be displayed if INCLUDE_WEATHER is set to "1".    
