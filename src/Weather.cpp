@@ -66,50 +66,50 @@ void Weather::onRequestComplete(const std::string &content)                     
     int tempInt = 0;                                                             // Used in populating WxInfo
     std::string json;                                                            // Holds json string in populating WxInfo 
     TRACE << "In Weather::onRequestComplete: \n";
-    std::cout << m_httpReq.content() <<std::endl;
+    TRACE << m_httpReq.content() ;
     json = m_httpReq.content();                                                  // Copy result string from receive buffer
     if (json.size() < 300)                                                       // Not big enough, must be some sort of error
         return;
 
     tempstr2 = Weather::extractStr(json, "description");
     m_wxInfo.conditions = tempstr2;
-    std::cout <<"conditions: " <<tempstr2  <<std::endl;
+    TRACE << "conditions: " << tempstr2;
     tempstr2 = Weather::extract(json, "temp");
     m_wxInfo.ctemp = std::stof(tempstr2);
-    std::cout <<"ctemp: " <<tempstr2 <<std::endl;
+    TRACE << "ctemp: " << tempstr2;
     tempstr2 = Weather::extract(json, "pressure");
     m_wxInfo.pressure = std::stoi(tempstr2);
-    std::cout <<"pressure: " <<tempstr2 <<std::endl;
+    TRACE << "pressure: " << tempstr2;
     tempstr2 = Weather::extract(json, "humidity");
     m_wxInfo.humidity = std::stoi(tempstr2);
-    std::cout <<"humidity: " <<tempstr2 <<std::endl;
+    TRACE << "humidity: " << tempstr2;
     tempstr2 = Weather::extract(json, "wind_speed");
     m_wxInfo.windSpeed = std::stof(tempstr2);
-    std::cout <<"windSpeed: " <<tempstr2 <<std::endl;       
+    TRACE << "windSpeed: " << tempstr2;       
     tempstr2 = Weather::extract(json, "wind_deg");
     m_wxInfo.windDegree = std::stoi(tempstr2);
     tempInt = std::stoi(tempstr2);
-    std::cout <<"windDegree: " <<tempstr2 <<std::endl;
+    TRACE << "windDegree: " << tempstr2;
     tempstr2 = "BAD";
     tempstr2 = Weather::getCardinal(tempInt);
     m_wxInfo.windCardinal = tempstr2;
-    std::cout <<"windCardinal: " <<tempstr2 <<std::endl;
+    TRACE << "windCardinal: " << tempstr2;
     // calculate and display windCardinal
     tempstr2 = Weather::extract(json, "sunrise");
     m_wxInfo.sunRise = std::stoull(tempstr2);
-    std::cout <<"sunRise: " <<tempstr2 <<std::endl;
+    TRACE << "sunRise: " << tempstr2;
     tempstr2 = Weather::extract(json, "sunset");
     m_wxInfo.sunSet = std::stoull(tempstr2);
-    std::cout <<"sunSet: " <<tempstr2 <<std::endl;
+    TRACE << "sunSet: " << tempstr2;
     tempstr2 = Weather::extract(json, "timezone_offset");
     m_wxInfo.wxTimezone = std::stoull(tempstr2);
-    std::cout <<"wxTimeZone: " <<tempstr2 <<std::endl;
+    TRACE << "wxTimeZone: " << tempstr2;
 //    tempstr2 = Clock::extractStr(json, "name");
 //    m_wxInfo.cityName = tempstr2;
 //    std::cout <<"cityName: " <<tempstr2 <<std::endl;
     tempstr2 = Weather::extract(json, "dt");
     m_wxInfo.wxDateTime = std::stoull(tempstr2);
-    std::cout <<"wxDateTime: " <<tempstr2 <<std::endl;
+    TRACE << "wxDateTime: " << tempstr2;
 }
 
 std::string Weather::extract(const std::string &json, const std::string &name)    // Extract Integers and Floating Point
