@@ -1,9 +1,7 @@
 #include "fonts.h"
 #include "ClockUi.h"
-#include "Weather.h"
 #include "Utils/Trace.h"
 
-#include "PicoClockHw/HttpRequest.h"
 #include "PicoClockHw/Platform.h"
 #include "PicoClockHw/Wifi.h"
 

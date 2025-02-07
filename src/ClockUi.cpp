@@ -91,7 +91,9 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
     syncSubmenu->addFunction<SyncInfo>(this, SyncInfo::LastSyncDrift);
     syncSubmenu->addFunction<WifiStatus>(this);
 
+#ifdef INCLUDE_WEATHER
     addFunction<Action>(uiText(TextId::UpdateWeatherNow), std::bind(&Weather::sync, &m_weather));
+#endif
 
     // Remember the last used time function in case auto scroll is enabled.
     if (m_currentMenu->at(m_curFuncIdx)->isTimeFunction())

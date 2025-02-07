@@ -29,7 +29,6 @@ add_executable( ${PROJECT_NAME}
                 src/fonts.cpp
                 src/Settings.cpp
                 src/UiTexts.cpp
-                src/Weather.cpp
 
                 src/Functions/AbstractFunction.cpp
                 src/Functions/Alarm.cpp
@@ -52,7 +51,6 @@ add_executable( ${PROJECT_NAME}
                 src/PicoClockHw/Display.cpp
                 src/PicoClockHw/Flash.cpp
                 src/PicoClockHw/Gps.cpp
-                src/PicoClockHw/HttpRequest.cpp
                 src/PicoClockHw/Platform.cpp
                 src/PicoClockHw/Rtc.cpp
 )
@@ -75,13 +73,13 @@ if (DISPLAY_PIO)
         target_link_libraries(${PROJECT_NAME} hardware_dma hardware_pio)
 endif()
 
-if (PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PICO_BOARD=pico_w
-        target_compile_definitions(${PROJECT_NAME} PRIVATE PICO_CYW43_SUPPORTED)
-        target_sources(${PROJECT_NAME} PRIVATE
-                src/PicoClockHw/Ntp.cpp 
-                src/PicoClockHw/Wifi.cpp)
+if (INCLUDE_WEATHER)
+        if (NOT PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PICO_BOARD=pico_w
+                message(FATAL_ERROR "INCLUDE_WEATHER requires PICO_CYW43_SUPPORTED")
+        endif()
+        add_compile_definitions(INCLUDE_WEATHER)
+        target_sources(${PROJECT_NAME} PRIVATE src/Weather.cpp src/PicoClockHw/HttpRequest.cpp)
         target_link_libraries(${PROJECT_NAME} 
-                pico_cyw43_arch_lwip_threadsafe_background
                 pico_lwip_http
                 pico_lwip_mbedtls
                 pico_mbedtls)
@@ -91,8 +89,17 @@ if (PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PI
                 ${PICO_LWIP_PATH}/src/apps/altcp_tls/altcp_tls_mbedtls.c
                 ${PICO_LWIP_PATH}/src/apps/http/altcp_proxyconnect.c
                 PROPERTIES
-                COMPILE_OPTIONS "-Wno-unused-result;-Wno-incompatible-pointer-types"
-                )                
+                COMPILE_OPTIONS "-Wno-unused-result;-Wno-incompatible-pointer-types")                
+
+endif()
+
+if (PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PICO_BOARD=pico_w
+        target_compile_definitions(${PROJECT_NAME} PRIVATE PICO_CYW43_SUPPORTED)
+        target_sources(${PROJECT_NAME} PRIVATE
+                src/PicoClockHw/Ntp.cpp 
+                src/PicoClockHw/Wifi.cpp)
+        target_link_libraries(${PROJECT_NAME} pico_cyw43_arch_lwip_threadsafe_background)
+
 endif()
 
 # create map/bin/hex/uf2 file in addition to ELF.

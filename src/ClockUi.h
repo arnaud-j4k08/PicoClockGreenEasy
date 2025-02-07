@@ -8,7 +8,10 @@
 #include "Clock.h"
 #include "Settings.h"
 #include "Functions/AbstractFunction.h"
+
+#ifdef INCLUDE_WEATHER
 #include "Weather.h"
+#endif
 
 class Countdown;
 class Stopwatch;
@@ -79,7 +82,9 @@ private:
     int m_vertScrollDir = 0;
     CyclicCounter m_vertScrollFrameCounter {Display::FRAME_RATE / 25};
 
+#ifdef INCLUDE_WEATHER
     Weather m_weather;
+#endif
 
     template <class FunctionType, typename... CtorParams>
     int addFunction(CtorParams... ctorParams);
