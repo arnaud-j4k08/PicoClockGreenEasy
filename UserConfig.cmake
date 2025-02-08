@@ -8,9 +8,10 @@ set(TRACE_TO_STDIO "0")
 # Configuration of the optional Weather menu.  Requires configuration of OPEN_WEATHER_MAP_URL, WIFI_SSID, and WIFI_PASSWORD below
 set(INCLUDE_WEATHER "0")  # 0 or 1, 1 = Include the Weather Submenu and processing.  See below for configuration notes.   
 
+set (WIFI_SSID "")
+set (WIFI_PASSWORD "")
+
 add_compile_definitions(
-    WIFI_SSID=\"\"
-    WIFI_PASSWORD=\"\"
     UTC_OFFSET=1 # UTC offset as real number of hours. For example, set 5.5 for UTC+05:30.
 
     # Set location for automatic daylight saving time observation. 
