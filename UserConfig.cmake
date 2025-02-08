@@ -8,11 +8,13 @@ set(TRACE_TO_STDIO "0")
 # Configuration of the optional Weather menu.  Requires configuration of OPEN_WEATHER_MAP_URL, WIFI_SSID, and WIFI_PASSWORD below
 set(INCLUDE_WEATHER "0")  # 0 or 1, 1 = Include the Weather Submenu and processing.  See below for configuration notes.   
 
+set (WIFI_SSID "")
+set (WIFI_PASSWORD "")
+
 add_compile_definitions(
     OPEN_WEATHER_MAP_URL=\"\"  # There are so many options in the API, it is easiest to define them as a group. 
 #   \"/data/3.0/onecall?lat=11.1111&lon=-22.2222&appid=supersecretkey&exclude=minutely,hourly,daily,alerts&units=imperial\"
-    WIFI_SSID=\"\"
-    WIFI_PASSWORD=\"\"
+
     UTC_OFFSET=0 # UTC offset as real number of hours. For example, set 5.5 for UTC+05:30.
 
     # Set location for automatic daylight saving time observation. 
@@ -59,7 +61,6 @@ add_compile_definitions(
 #     from metres/sec to kilometres/hour.  Please review the OpenWeatherMap.org website for further information.
 
 # In addition to the OPEN_WEATHER_MAP_URL, the weather option requires a working Wifi connection. WIFI_SSID and WIFI_PASSWORD must be 
-# configured.  Each value is enclosed by escaped double quotation marks at the beginning and end of the string: \"
-# For example, to specify your WIFI_SSID as MyWifi, the value would appear as WIFI_SSID=\"MyWifi\" 
-# A null string is represented by \"\". If either the WIFI_SSID or WIFI_PASSWORD are configured as a null string, weather updates will
-# not be attempted, although the menu will be displayed if INCLUDE_WEATHER is set to "1".    
+# configured.  For example, to specify your WIFI_SSID as MyWifi, the value would appear as WIFI_SSID="MyWifi" 
+# A null string is represented by "". If either the WIFI_SSID or WIFI_PASSWORD are configured as a null string, and INCLUDE_WEATHER is
+# set to "1", a complile error will result.    

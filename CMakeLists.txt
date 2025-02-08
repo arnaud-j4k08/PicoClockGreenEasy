@@ -16,7 +16,7 @@ set(PICO_BOARD pico_w CACHE STRING "Board type")
 # Include the user configuration. The UserConfig.cmake at the root of the repo can be overriden by 
 # another UserConfig.cmake file one directory upper (outside of the repo to avoid having to modify 
 # it).
-if (EXISTS "../UserConfig.cmake")
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../UserConfig.cmake)
         include (../UserConfig.cmake)
 else()
         include (UserConfig.cmake)
@@ -92,9 +92,17 @@ if (DISPLAY_PIO)
 endif()
 
 if (INCLUDE_WEATHER)
+        # Check if all parameters needed to use the weather feature are defined.
         if (NOT PICO_CYW43_SUPPORTED) # set by the pico_.cmake file of the Pico SDK when PICO_BOARD=pico_w
-                message(FATAL_ERROR "INCLUDE__WEATHER requires PICO_CYW43_SUPPORTED")
+                message(FATAL_ERROR "To use the weather feature, PICO_BOARD must be set to pico_w")
         endif()
+        if (NOT DEFINED WIFI_SSID OR WIFI_SSID STREQUAL "")
+                message(FATAL_ERROR "To use the weather feature, WIFI_SSID must be defined")
+        endif()
+        if (NOT DEFINED WIFI_PASSWORD OR WIFI_PASSWORD STREQUAL "")
+                message(FATAL_ERROR "To use the weather feature, WIFI_PASSWORD must be defined")
+        endif()
+
         add_compile_definitions(INCLUDE_WEATHER)
         target_sources(${PROJECT_NAME} PRIVATE
                 src/Functions/WeatherInfo.cpp
@@ -107,7 +115,6 @@ if (INCLUDE_WEATHER)
         # Ignore warnings from lwip code
         set_source_files_properties(
                         ${PICO_LWIP_PATH}/src/apps/altcp_tls/altcp_tls_mbedtls.c
-                        ${PICO_LWIP_PATH}/src/apps/altcp_tls/altcp_proxyconnect.c
                         ${PICO_LWIP_PATH}/src/apps/http/altcp_proxyconnect.c
                         PROPERTIES
                         COMPILE_OPTIONS "-Wno-unused-result;-Wno-incompatible-pointer-types"
@@ -116,7 +123,10 @@ if (INCLUDE_WEATHER)
 endif()
 
 if (PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PICO_BOARD=pico_w
-        target_compile_definitions(${PROJECT_NAME} PRIVATE PICO_CYW43_SUPPORTED)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE 
+        PICO_CYW43_SUPPORTED
+        WIFI_SSID=\"${WIFI_SSID}\"
+        WIFI_PASSWORD=\"${WIFI_PASSWORD}\")
         target_sources(${PROJECT_NAME} PRIVATE
                 src/PicoClockHw/Ntp.cpp 
                 src/PicoClockHw/Wifi.cpp)
@@ -134,5 +144,4 @@ pico_enable_stdio_uart(${PROJECT_NAME} 0)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src
-    ${CMAKE_CURRENT_LIST_DIR}/src/PicoClockHw/Config
-    )
+    ${CMAKE_CURRENT_LIST_DIR}/src/PicoClockHw/Config)
