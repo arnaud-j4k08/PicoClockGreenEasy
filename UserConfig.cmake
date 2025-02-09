@@ -12,10 +12,12 @@ set (WIFI_SSID "")
 set (WIFI_PASSWORD "")
 
 add_compile_definitions(
+
     OPEN_WEATHER_MAP_URL=\"\"  # There are so many options in the API, it is easiest to define them as a group. 
 #   \"/data/3.0/onecall?lat=11.1111&lon=-22.2222&appid=supersecretkey&exclude=minutely,hourly,daily,alerts&units=imperial\"
 
-    UTC_OFFSET=0 # UTC offset as real number of hours. For example, set 5.5 for UTC+05:30.
+    UTC_OFFSET=1 # UTC offset as real number of hours. For example, set 5.5 for UTC+05:30.
+
 
     # Set location for automatic daylight saving time observation. 
     # Possible values: Europe, USA or Unknown (no automatic change)

@@ -25,5 +25,4 @@ struct Trampoline <Return (Class::*)(Param... param)>
         auto self = static_cast<Class *>(user);
         return (self->*methodPtr)(params...);
     }
-
 };

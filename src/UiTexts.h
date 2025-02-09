@@ -89,7 +89,6 @@ enum class TextId
     SyncWxNow,      
     LastUpdate,     
 
-
     TextCount
 };
 
