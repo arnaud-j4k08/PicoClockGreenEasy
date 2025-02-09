@@ -27,8 +27,7 @@ public:
     {
         m_clock.onWifiInited();
 #ifdef INCLUDE_WEATHER 
-        if (m_wx)                           // If Wifi and OpenWeatherMap URL are defined
-            m_weather.syncWxNow();
+        m_weather.syncWxNow();
 #endif        
     }
 
@@ -73,8 +72,6 @@ private:
     int m_WxWindDirectionFuncIdx = 4;      
     int m_WxHumidityFuncIdx = 5;        
     int m_WxLastUpdateFuncIdx = 9;      
-
-    bool m_wx = false;                   // Boolean to test execution of Weather functions
 
     Stopwatch *m_stopwatchFunc = nullptr;
     Countdown *m_countdownFunc = nullptr;

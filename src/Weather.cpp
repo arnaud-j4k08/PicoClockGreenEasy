@@ -6,15 +6,6 @@
 
 Weather::Weather() 
 {
-    #ifdef INCLUDE_WEATHER                                                    // Is Weather configured?
-        m_wx = true;                                                          // Yes, set flag for weather processing                                
-    #else                                                                     
-        m_wx = false;                                                         // No, set flag to bypass weather processing
-    #endif                                                                          
-
-    if (OPEN_WEATHER_MAP_URL == "" || WIFI_SSID == "" )                       // Basic checks to see if weather URL and Wifi
-        m_wx = false;                                                         // defined.  Bypass weather processing if not.  
-
                                                                               // Set callback for Weather calls        
     using namespace std::placeholders;
     TRACE << "In Weather::Weather, calling setOnCompleteCallback \n";         // Set Routine to be called
@@ -43,19 +34,16 @@ void Weather::startWxSync()
     } else                                                                       
     {                                                                            
         TRACE << "Already connected";                                           
-        if (m_wx)                                                               // Is Weather configured?  
-        {                                                                       
         TRACE << "In Weather::startWxSync, calling m_httpReq start \n";           
     // Connect wi-fi if necessary (the lambda expression below will also be called if already 
     // connected)                                                               // Test whether we are really connected
-            Wifi::connectAsync(
-                [this](bool success)
-                {  
-                    if (success)                                                // Actual call to get weather 
-                        m_httpReq.start("api.openweathermap.org", 443, OPEN_WEATHER_MAP_URL);
-                });
+        Wifi::connectAsync(
+            [this](bool success)
+            {  
+                if (success)                                                // Actual call to get weather 
+                    m_httpReq.start("api.openweathermap.org", 443, OPEN_WEATHER_MAP_URL);
+            });
         TRACE << "In Weather::startWxSync, after calling m_httpReq.start \n";     
-        } 
     }  
 }  
 
@@ -161,14 +149,9 @@ void Weather::onWifiConnectionFinished(bool success)
 {
     if (success)
     {
-        if (m_wx)
-        {
-            TRACE << "Wifi connected, start Weather request";
-            startWxSync();
-            TRACE << "WX Request started";
-        }
-
-
+        TRACE << "Wifi connected, start Weather request";
+        startWxSync();
+        TRACE << "WX Request started";
     } else
     {
         TRACE << "Connection failed";

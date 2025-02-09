@@ -45,6 +45,4 @@ private:
     std::string extract(const std::string &json, const std::string &name);   
     std::string extractStr(const std::string &json, const std::string &name); 
     std::string getCardinal(int degrees) const;                                 
-
-    bool m_wx = true;                                                        // Boolean to test execution of Weather functions
 };

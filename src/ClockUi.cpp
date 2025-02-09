@@ -55,15 +55,6 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
     m_curFuncIdx = m_settings.get().function;
     initHorizScrolling(); // If the selected function needs to scroll
 
-    #ifdef INCLUDE_WEATHER                                                    // Is Weather configured?
-        m_wx = true;                                                          // Yes, set flag for weather processing                                
-    #else                                                                 
-        m_wx = false;                                                         // No, set flag to bypass weather processing
-    #endif                                                                      
-
-    if (OPEN_WEATHER_MAP_URL == "" || WIFI_SSID == "" )                       // Ensure that weather URL and Wifi
-        m_wx = false;                                                         // defined.  Bypass weather processing if not.  
-
     TRACE << "Add root level functions";
     addFunction<Time>(Time::HourMinSec);
     int hourMinBarFuncIdx = addFunction<Time>(Time::HourMinBar);
@@ -188,7 +179,7 @@ void ClockUi::onFrameCallback()
         if (m_clock.get().tm_sec==0)
         {
             tempInt = (m_clock.get().tm_min + 1) % 30; // If at top or bottom of hour, update the weather information
-            if (tempInt == 0 && m_wx)
+            if (tempInt == 0 )
                 {  
                 TRACE << "ClockUi::onFrameCallback, Periodic Update of Weather Information \n";
                 m_weather.syncWxNow();
