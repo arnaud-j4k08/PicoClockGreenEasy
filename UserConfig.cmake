@@ -63,4 +63,4 @@ add_compile_definitions(
 # In addition to the OPEN_WEATHER_MAP_URL, the weather option requires a working Wifi connection. WIFI_SSID and WIFI_PASSWORD must be 
 # configured.  For example, to specify your WIFI_SSID as MyWifi, the value would appear as WIFI_SSID="MyWifi" 
 # A null string is represented by "". If either the WIFI_SSID or WIFI_PASSWORD are configured as a null string, and INCLUDE_WEATHER is
-# set to "1", a complile error will result.    
+# set to "1", a compile error will result.    

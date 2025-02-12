@@ -93,7 +93,7 @@ endif()
 
 if (INCLUDE_WEATHER)
         # Check if all parameters needed to use the weather feature are defined.
-        if (NOT PICO_CYW43_SUPPORTED) # set by the pico_.cmake file of the Pico SDK when PICO_BOARD=pico_w
+        if (NOT PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PICO_BOARD=pico_w
                 message(FATAL_ERROR "To use the weather feature, PICO_BOARD must be set to pico_w")
         endif()
         if (NOT DEFINED WIFI_SSID OR WIFI_SSID STREQUAL "")
@@ -114,11 +114,11 @@ if (INCLUDE_WEATHER)
                 pico_mbedtls)
         # Ignore warnings from lwip code
         set_source_files_properties(
-                        ${PICO_LWIP_PATH}/src/apps/altcp_tls/altcp_tls_mbedtls.c
-                        ${PICO_LWIP_PATH}/src/apps/http/altcp_proxyconnect.c
-                        PROPERTIES
-                        COMPILE_OPTIONS "-Wno-unused-result;-Wno-incompatible-pointer-types"
-                        )        
+                ${PICO_LWIP_PATH}/src/apps/altcp_tls/altcp_tls_mbedtls.c
+                ${PICO_LWIP_PATH}/src/apps/http/altcp_proxyconnect.c
+                PROPERTIES
+                COMPILE_OPTIONS "-Wno-unused-result;-Wno-incompatible-pointer-types")        
+
 
 endif()
 
@@ -127,6 +127,7 @@ if (PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PI
         PICO_CYW43_SUPPORTED
         WIFI_SSID=\"${WIFI_SSID}\"
         WIFI_PASSWORD=\"${WIFI_PASSWORD}\")
+
         target_sources(${PROJECT_NAME} PRIVATE
                 src/PicoClockHw/Ntp.cpp 
                 src/PicoClockHw/Wifi.cpp)
@@ -143,5 +144,5 @@ pico_enable_stdio_usb(${PROJECT_NAME} 1)
 pico_enable_stdio_uart(${PROJECT_NAME} 0)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}/src
+    ${CMAKE_CURRENT_LIST_DIR}/src    
     ${CMAKE_CURRENT_LIST_DIR}/src/PicoClockHw/Config)
