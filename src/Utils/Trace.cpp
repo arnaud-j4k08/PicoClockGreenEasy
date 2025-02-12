@@ -10,8 +10,10 @@ uint64_t g_lastTrace = 0;
 bool isEnabledForFile(const std::string &file)
 {
     return 
-        file == "main.cpp" ||
+//        file == "main.cpp" ||
         file == "Weather.cpp" ||
+//        file == "Gps.cpp" ||
+        file == "ClockUi.cpp" ||
         file == "HttpRequest.cpp";
 
 }

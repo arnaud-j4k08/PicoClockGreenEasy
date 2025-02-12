@@ -38,15 +38,11 @@ private:
 
     time_t m_time = 0; // Current time as unix time, local (not UTC), not considering DST
     tm m_tm = {}; // Current time as tm, considering DST
-#ifdef INCLUDE_WEATHER 
-    HttpRequest m_httpReq;
-#endif    
-
-    void onRequestComplete(const std::string &content);                      
+                  
     std::string extract(const std::string &json, const std::string &name);   
     std::string extractStr(const std::string &json, const std::string &name); 
     std::string getCardinal(int degrees) const;                                 
-=======
+
     void sync();
 
 private:
