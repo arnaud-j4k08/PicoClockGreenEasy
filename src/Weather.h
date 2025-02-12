@@ -9,6 +9,7 @@ class Weather
 {
 public:
     Weather();
+
 // Structure for Weather information.                   
     struct WxInfo                                       
     {                                                   
@@ -45,4 +46,11 @@ private:
     std::string extract(const std::string &json, const std::string &name);   
     std::string extractStr(const std::string &json, const std::string &name); 
     std::string getCardinal(int degrees) const;                                 
+=======
+    void sync();
+
+private:
+    HttpRequest m_httpReq;
+
+    void onRequestComplete(const std::string &content);
 };

@@ -553,7 +553,7 @@ void ClockUi::renderHorizScrollingText(
 
         if (editedValue.empty() || m_blinkingCounter < AbstractFunction::BLINKING_DISAPPEAR_FRAME)
         {
-            // TRACE << "Draw the scrolling text:" << leftText + editedValue + rightText;
+//            TRACE << "Draw the scrolling text:" << leftText + editedValue + rightText;
             frame.drawText(-m_horizScrollPos, 0, leftText + editedValue + rightText);
         } else
         {

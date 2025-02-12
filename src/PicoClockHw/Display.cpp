@@ -216,10 +216,11 @@ void Display::onDmaTransferredFrame()
 
 #else // DISPLAY_PIO
 bool Display::rowScanProxy(repeating_timer_t *rt)
-    {
-       return static_cast<Display *>(rt->user_data)->rowScan();
-    }
-    
+
+{
+    return static_cast<Display *>(rt->user_data)->rowScan();
+}
+
 bool Display::rowScan()
 {
     // Send all pixels for the current row.

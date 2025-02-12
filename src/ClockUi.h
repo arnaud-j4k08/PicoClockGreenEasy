@@ -12,6 +12,10 @@
 #include "Weather.h"
 #endif
 
+#ifdef INCLUDE_WEATHER
+#include "Weather.h"
+#endif
+
 class Countdown;
 class Stopwatch;
 
@@ -97,6 +101,10 @@ private:
     int m_vertScrollPos = 0;
     int m_vertScrollDir = 0;
     CyclicCounter m_vertScrollFrameCounter {Display::FRAME_RATE / 25};
+
+#ifdef INCLUDE_WEATHER
+    Weather m_weather;
+#endif
 
     template <class FunctionType, typename... CtorParams>
     int addFunction(CtorParams... ctorParams);

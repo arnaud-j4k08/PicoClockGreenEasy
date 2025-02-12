@@ -152,6 +152,25 @@ void Clock::onWifiConnectionFinished(bool success)
     }
 }
 
+void Clock::onWifiConnectionFinished(bool success)
+{
+    if (success)
+    {
+        if (m_ntp)
+        {
+            TRACE << "Wifi connected, start NTP request";
+            m_ntp->startRequest();
+            TRACE << "Request started";
+            m_extSync = NtpInProgress;
+        } else
+            m_extSync = Inactive;
+    } else
+    {
+        TRACE << "Connection failed";
+        m_extSync = Inactive;
+    }
+}
+
 void Clock::onExternalTimeReceived(time_t utcTime, uint32_t ms, Settings::SyncSource source)
 {
     TRACE << "Received external UTC time:" << utcTime <<"." <<ms;
@@ -236,7 +255,6 @@ void Clock::tick(bool &clockAdjusted, Settings::AlarmMode &reachedAlarmMode)
         clockAdjusted = true;
     } 
 }
-
 
 
 Settings::AlarmMode Clock::checkIfAlarmReached()

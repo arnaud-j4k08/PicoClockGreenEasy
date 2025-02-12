@@ -1,18 +1,4 @@
-# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
-if(WIN32)
-    set(USERHOME $ENV{USERPROFILE})
-else()
-    set(USERHOME $ENV{HOME})
-endif()
-set(sdkVersion 2.1.0)
-set(toolchainVersion 13_3_Rel1)
-set(picotoolVersion 2.1.0)
-set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
-if (EXISTS ${picoVscode})
-    include(${picoVscode})
-endif()
-# ===================================================================================
-set(PICO_BOARD pico_w CACHE STRING "Board type")
+
 # Include the user configuration. The UserConfig.cmake at the root of the repo can be overriden by 
 # another UserConfig.cmake file one directory upper (outside of the repo to avoid having to modify 
 # it).
@@ -104,6 +90,7 @@ if (INCLUDE_WEATHER)
         endif()
 
         add_compile_definitions(INCLUDE_WEATHER)
+
         target_sources(${PROJECT_NAME} PRIVATE
                 src/Functions/WeatherInfo.cpp
                 src/Weather.cpp
@@ -146,3 +133,4 @@ pico_enable_stdio_uart(${PROJECT_NAME} 0)
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src    
     ${CMAKE_CURRENT_LIST_DIR}/src/PicoClockHw/Config)
+
