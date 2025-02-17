@@ -4,12 +4,12 @@
 #include "PicoClockHw/Platform.h"
 #include <functional>
 
-Weather::Weather() 
+Weather::Weather()
 {
                                                                               // Set callback for Weather calls        
     using namespace std::placeholders;
     TRACE << "In Weather::Weather, calling setOnCompleteCallback \n";         // Set Routine to be called
-    m_httpReq.setOnCompleteCallback(std::bind(&Weather::onRequestComplete, this, _1));  // when OpenWeatherMap api responds
+    m_httpReq->setOnCompleteCallback(std::bind(&Weather::onRequestComplete, this, _1));  // when OpenWeatherMap api responds
     TRACE << "In Weather::Weather, after calling setOnCompleteCallback \n"; 
 }
 
@@ -34,16 +34,16 @@ void Weather::startWxSync()
     } else                                                                       
     {                                                                            
         TRACE << "Already connected";                                           
-        TRACE << "In Weather::startWxSync, calling m_httpReq start \n";           
+        TRACE << "In Weather::startWxSync, calling m_httpReq->start \n";           
     // Connect wi-fi if necessary (the lambda expression below will also be called if already 
     // connected)                                                               // Test whether we are really connected
         Wifi::connectAsync(
             [this](bool success)
             {  
                 if (success)                                                // Actual call to get weather 
-                    m_httpReq.start("api.openweathermap.org", 443, OPEN_WEATHER_MAP_URL);
+                    m_httpReq->start("api.openweathermap.org", 443, OPEN_WEATHER_MAP_URL);
             });
-        TRACE << "In Weather::startWxSync, after calling m_httpReq.start \n";     
+        TRACE << "In Weather::startWxSync, after calling m_httpReq->start \n";     
     }  
 }  
 
@@ -54,8 +54,23 @@ void Weather::onRequestComplete(const std::string &content)                     
     int tempInt = 0;                                                             // Used in populating WxInfo
     std::string json;                                                            // Holds json string in populating WxInfo 
     TRACE << "In Weather::onRequestComplete: \n";
-    TRACE << m_httpReq.content() ;
-    json = m_httpReq.content();                                                  // Copy result string from receive buffer
+    TRACE << m_httpReq->content() ;
+    json = m_httpReq->content();                                                 // Copy result string from receive buffer
+
+    if (json.size() < 1)                                                         // assume an error, restart HttpRequest
+    {
+        TRACE << "In Weather::onRequestComplete: Resetting HttpRequest \n";
+        m_httpReq.reset();
+//        Wifi::deinit();
+//        Wifi::init();
+        m_httpReq = std::make_unique<HttpRequest>();
+        using namespace std::placeholders;
+        TRACE << "In Weather::onRequestComplete:, calling setOnCompleteCallback during reset of HttpRequest \n"; 
+        m_httpReq->setOnCompleteCallback(std::bind(&Weather::onRequestComplete, this, _1));  
+        TRACE << "In Weather::onRequestComplete:, after calling setOnCompleteCallback during reset of HttpRequest  \n"; 
+        return;
+    }    
+
     if (json.size() < 300)                                                       // Not big enough, must be some sort of error
         return;
 

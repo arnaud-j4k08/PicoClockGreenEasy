@@ -41,12 +41,11 @@ private:
                   
     std::string extract(const std::string &json, const std::string &name);   
     std::string extractStr(const std::string &json, const std::string &name); 
-    std::string getCardinal(int degrees) const;                                 
+    std::string getCardinal(int degrees) const;  
 
-    void sync();
 
 private:
-    HttpRequest m_httpReq;
+    std::unique_ptr<HttpRequest> m_httpReq = std::make_unique<HttpRequest>();
 
     void onRequestComplete(const std::string &content);
 };
