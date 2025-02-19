@@ -57,17 +57,21 @@ void Weather::onRequestComplete(const std::string &content)                     
     TRACE << m_httpReq->content() ;
     json = m_httpReq->content();                                                 // Copy result string from receive buffer
 
-    if (json.size() < 1)                                                         // assume an error, restart HttpRequest
+    if (json.size() < 1)                                                         // assume Wifi link failure, disconnect
     {
-        TRACE << "In Weather::onRequestComplete: Resetting HttpRequest \n";
-        m_httpReq.reset();
+//        TRACE << "In Weather::onRequestComplete: Resetting HttpRequest \n";
+//        m_httpReq.reset();
 //        Wifi::deinit();
 //        Wifi::init();
-        m_httpReq = std::make_unique<HttpRequest>();
-        using namespace std::placeholders;
-        TRACE << "In Weather::onRequestComplete:, calling setOnCompleteCallback during reset of HttpRequest \n"; 
-        m_httpReq->setOnCompleteCallback(std::bind(&Weather::onRequestComplete, this, _1));  
-        TRACE << "In Weather::onRequestComplete:, after calling setOnCompleteCallback during reset of HttpRequest  \n"; 
+//        m_httpReq = std::make_unique<HttpRequest>();
+//        using namespace std::placeholders;
+//        TRACE << "In Weather::onRequestComplete:, calling setOnCompleteCallback during reset of HttpRequest \n"; 
+//        m_httpReq->setOnCompleteCallback(std::bind(&Weather::onRequestComplete, this, _1));  
+//        TRACE << "In Weather::onRequestComplete:, after calling setOnCompleteCallback during reset of HttpRequest  \n"; 
+        TRACE << "In Weather::onRequestComplete:, calling Wifi::disconnect \n"; 
+        Wifi::disconnect();  
+        TRACE << "In Weather::onRequestComplete:, calling Wifi::cycle_sta_mode \n";
+        Wifi::cycle_sta_mode(); 
         return;
     }    
 

@@ -168,3 +168,24 @@ std::string Wifi::linkStatusToString(Status s)
 
     return "";
 }
+void Wifi::disconnect()
+{
+    TRACE << "In Wifi::disconnect";
+    cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
+}
+
+void Wifi::cycle_sta_mode()
+{
+    cyw43_arch_disable_sta_mode();
+    TRACE << "In Wifi::cycle_sta_mode after disable sta mode";
+
+    cyw43_arch_enable_sta_mode();
+
+    // On Pico non-W, cyw43_arch_init still succeeds and turns the onboard led on (as the cyw43 uses
+    // pin 25 on Pico W). Therefore, turn the led off again. This does not have any effect on 
+    // Pico W.
+    TRACE << "in Wifi::cycle_sta_mode after enable sta mode";
+    gpio_init(PICO_DEFAULT_LED_PIN);
+    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
+    gpio_put(PICO_DEFAULT_LED_PIN, false);
+}

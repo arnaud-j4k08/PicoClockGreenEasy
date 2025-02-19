@@ -12,7 +12,7 @@ bool isEnabledForFile(const std::string &file)
     return 
 //        file == "main.cpp" ||
         file == "Weather.cpp" ||
-//        file == "Gps.cpp" ||
+        file == "Wifi.cpp" ||
         file == "ClockUi.cpp" ||
         file == "HttpRequest.cpp";
 

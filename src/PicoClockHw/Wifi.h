@@ -25,6 +25,8 @@ public:
     static bool init();
     static void deinit();
     static bool connectBlocking();
+    static void disconnect();
+    static void cycle_sta_mode();
     
     // Can be called also if a connection is already ongoing. In this case, all passed callbacks
     // will be called when the connection succeeds or fails.
