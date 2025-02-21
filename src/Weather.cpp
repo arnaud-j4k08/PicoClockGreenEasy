@@ -60,18 +60,17 @@ void Weather::onRequestComplete(const std::string &content)                     
     if (json.size() < 1)                                                         // assume Wifi link failure, disconnect
     {
 //        TRACE << "In Weather::onRequestComplete: Resetting HttpRequest \n";
-//        m_httpReq.reset();
-//        Wifi::deinit();
+//        m_httpReq.reset();    // Trying to address httpc_result = 4, unexpectedly closed by remote server, panic issue
+//        Wifi::deinit();     // These two lock up the clock immediately
 //        Wifi::init();
-//        m_httpReq = std::make_unique<HttpRequest>();
+        TRACE << "In Weather::onRequestComplete:, calling Wifi::disconnect \n"; 
+        Wifi::disconnect();  
+//        TRACE << "In Weather::onRequestComplete:, calling Wifi::cycle_sta_mode \n";
+//        Wifi::cycle_sta_mode(); 
+//        m_httpReq = std::make_unique<HttpRequest>();  // re-establish the http stack
 //        using namespace std::placeholders;
 //        TRACE << "In Weather::onRequestComplete:, calling setOnCompleteCallback during reset of HttpRequest \n"; 
 //        m_httpReq->setOnCompleteCallback(std::bind(&Weather::onRequestComplete, this, _1));  
-//        TRACE << "In Weather::onRequestComplete:, after calling setOnCompleteCallback during reset of HttpRequest  \n"; 
-        TRACE << "In Weather::onRequestComplete:, calling Wifi::disconnect \n"; 
-        Wifi::disconnect();  
-        TRACE << "In Weather::onRequestComplete:, calling Wifi::cycle_sta_mode \n";
-        Wifi::cycle_sta_mode(); 
         return;
     }    
 
