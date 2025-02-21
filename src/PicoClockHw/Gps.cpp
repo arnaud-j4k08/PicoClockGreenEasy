@@ -8,6 +8,7 @@
 #include <sstream>
 #include <iomanip>
 
+
 namespace
 {
     const auto GPS_UART = uart0;
@@ -108,6 +109,8 @@ void Gps::onMessage(const std::string &msg)
 
     std::istringstream stream(msg);
     std::string msgId;
+    std::string latdecimal;         // temp result for trace
+    std::string londecimal;         // temp result for trace
     if (!std::getline(stream, msgId, ','))
         return;
     if (msgId != "$GPRMC") return;
@@ -122,8 +125,34 @@ void Gps::onMessage(const std::string &msg)
         return;
     if (status != "A") return; // Stop if data not valid
 
+    std::string nmeaLatitude;
+    if (!std::getline(stream, nmeaLatitude, ','))
+        return;
+    TRACE << "NMEA Latitude:" << nmeaLatitude;
+    
+    std::string latitudeOrientation;
+    if (!std::getline(stream, latitudeOrientation, ','))
+        return;
+    TRACE << "Latitude Orientation:" << latitudeOrientation;
+
+    latdecimal = nmea_to_deg(nmeaLatitude, latitudeOrientation);
+    TRACE << "Decimal Latitude:" << latdecimal;
+
+    std::string nmeaLongitude;
+    if (!std::getline(stream, nmeaLongitude, ','))
+        return;
+    TRACE << "NMEA Longitude:" << nmeaLongitude;
+    
+    std::string longitudeOrientation;
+    if (!std::getline(stream, longitudeOrientation, ','))
+        return;
+    TRACE << "Longitude Orientation:" << longitudeOrientation;
+
+    londecimal = nmea_to_deg(nmeaLongitude, longitudeOrientation);
+    TRACE << "Decimal Longitude:" << londecimal;
+
     // Skip fields we don't need
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < 2; i++)   // was 6 fields
     {
         std::string s;
         if (!std::getline(stream, s, ','))
@@ -158,4 +187,26 @@ void Gps::onDateTime(const std::string &date, const std::string &time)
 
     if (m_timeCallback)
         m_timeCallback(mktime(&dt), ms);
+}/**
+ * Convert NMEA absolute position to decimal degrees
+ * "ddmm.mmmm" or "dddmm.mmmm" really is D+M/60,
+ * then negated if quadrant is 'W' or 'S'
+ */
+std::string Gps::nmea_to_deg(std::string& lat_lon, std::string& orientation)
+{
+  size_t dot = lat_lon.find(".");
+  if (dot != std::string::npos)
+  {
+    int deg = std::stoi(lat_lon.substr(0, dot-2));
+    double min = std::stod(lat_lon.substr(dot-2, std::string::npos));
+
+    double pos = (double)deg + min / 60.0;
+    pos *= ((orientation == "W" || orientation == "S")? -1 : 1 );
+
+    std::stringstream output;
+    output << std::fixed << std::setprecision(4) << pos;
+
+    return output.str();
+  }
+  return "";
 }

@@ -216,6 +216,7 @@ void Display::onDmaTransferredFrame()
 
 #else // DISPLAY_PIO
 bool Display::rowScanProxy(repeating_timer_t *rt)
+
 {
     return static_cast<Display *>(rt->user_data)->rowScan();
 }

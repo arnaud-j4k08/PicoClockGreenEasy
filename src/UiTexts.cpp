@@ -66,7 +66,21 @@ namespace
             "NTP",
             "GPS",
 
-            "Update Weather Now",
+        // Weather related Text.  Associated with WxInfo structure 
+            "Weather",                  
+            "Conditions: ",             
+            "Temp: ",                   
+            "Pressure: ",              
+            "Humidity: ",               
+            "Wind Speed: ",             
+            "Wind Dir: ",               
+            "Wind: ",                   
+            "Sunrise: ",                
+            "Sunset: ",                 
+            "Weather for: ",            
+            "Update Weather Now",       
+            "Last Update: ",                        
+
     };
 }
 

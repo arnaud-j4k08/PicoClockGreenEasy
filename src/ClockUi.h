@@ -8,10 +8,10 @@
 #include "Clock.h"
 #include "Settings.h"
 #include "Functions/AbstractFunction.h"
-
 #ifdef INCLUDE_WEATHER
 #include "Weather.h"
 #endif
+
 
 class Countdown;
 class Stopwatch;
@@ -27,6 +27,9 @@ public:
     void onWifiInited()
     {
         m_clock.onWifiInited();
+#ifdef INCLUDE_WEATHER 
+        m_weather.syncWxNow();
+#endif        
     }
 
 private:
@@ -37,6 +40,9 @@ private:
 
     Settings m_settings; // Must be initialized before m_clock as its constructor reads settings
     Clock m_clock;
+#ifdef INCLUDE_WEATHER     
+    Weather m_weather;   // Add single instance of Weather class here.
+#endif    
     bool m_forceRefresh = true;
     CyclicCounter m_blinkingCounter {Display::FRAME_RATE, -1};
     int m_editedValueIndex = 0;
@@ -54,9 +60,20 @@ private:
     // Menu and functions
     std::vector<std::unique_ptr<AbstractFunction>> *m_currentMenu = &m_rootMenu;
     std::vector<std::unique_ptr<AbstractFunction>> m_rootMenu;
+    std::vector<std::unique_ptr<AbstractFunction>> *m_wxMenu = nullptr;         
     int m_curFuncIdx = 0;
     int m_dateFuncIdx = 0;
     int m_temperatureFuncIdx = 0;
+
+//  Indexes for Weather Auto Scrolling  // Index values are determined by the order that a function is added to Weather Submenu
+//  int m_WxNameFuncIdx = 0;            // If the Weather Submenu functions are re-ordered, or functions removed/added, these
+    int m_WxConditionsFuncIdx = 1;      // values will need to be adjusted.
+    int m_WxTemperatureFuncIdx = 2;     
+    int m_WxWindFuncIdx = 3;            
+    int m_WxWindDirectionFuncIdx = 4;      
+    int m_WxHumidityFuncIdx = 5;        
+    int m_WxLastUpdateFuncIdx = 9;      
+
     Stopwatch *m_stopwatchFunc = nullptr;
     Countdown *m_countdownFunc = nullptr;
 
@@ -81,10 +98,6 @@ private:
     int m_vertScrollPos = 0;
     int m_vertScrollDir = 0;
     CyclicCounter m_vertScrollFrameCounter {Display::FRAME_RATE / 25};
-
-#ifdef INCLUDE_WEATHER
-    Weather m_weather;
-#endif
 
     template <class FunctionType, typename... CtorParams>
     int addFunction(CtorParams... ctorParams);

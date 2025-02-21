@@ -25,6 +25,7 @@ private:
     void onMessage(const std::string &msg);
     void onDateTime(const std::string &date, const std::string &time);
     void resetTimeoutAlarm();
+    std::string nmea_to_deg(std::string& lat_lon, std::string& orientation);
     int64_t onTimeout(alarm_id_t);
 
     static Gps *m_instance;

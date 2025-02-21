@@ -35,6 +35,11 @@ This project is an easy-to-use firmware for the Waveshare Pico-Clock-Green writt
     - weekly/once: If one or more weekdays are selected, the alarm will ring every week on these days. If no weekday is selected, the alarm will ring when the defined time is reached and disable itself.
     - skip next alarm: e.g. if you woke up before the alarm time or the next day is a national holiday, activate this function and the next alarm (and only this one) will be skipped. This is shown by the slow blinking of the "Alarm On" indicator.
     - gradual alarm mode that progressively increases the duration of beeps to wake up the user gently
+- optional weather:
+    - current conditions, temperature, wind speed, wind direction, humidity, pressure, sunrise, sunset
+    - updated every 30 minutes, with menu option to update on-demand
+    - requires Wifi connection, and no-cost subscription to OpenWeatherMap.org
+    - if left in weather submenu, automatically scroll between temperature, wind speed, wind direction, and weather conditions     
 
 ## Technical features
 - support for Pico and Pico W
@@ -72,7 +77,7 @@ picotool load -x ./PicoClockGreenEasy.uf2
 
 - Install the Pico development environment, e.g. by following https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf
 - clone this repository locally
-- configure the firmware by modifying the UserConfig.cmake file, especially if you want to use NTP synchronization over Wi-Fi
+- configure the firmware by modifying the UserConfig.cmake file, especially if you want to use NTP or Weather synchronization over Wi-Fi
 - enter the corresponding directory and configure the project
 ```
 cmake . -Bbuild
@@ -112,7 +117,7 @@ This is the full definition of the menu structure. Use the "enter/set" button to
 - time in hour:min:bar style &rarr; set hour &rarr; set min
 - time in hour:min style &rarr; set hour &rarr; set min
 - date &rarr; set year &rarr; set month &rarr; set day
-- temperature: toggle Celcius/Fahrenheit
+- temperature: toggle Celsius/Fahrenheit
 - alarms (with next alarm time and weekday if an alarm is activated): enter submenu
     - (if an alarm is activated) skip next alarm: toggle on/off
     - alarm 1 &rarr; set mode &rarr; set hour &rarr; set min &rarr; set weekdays
@@ -136,6 +141,18 @@ This is the full definition of the menu structure. Use the "enter/set" button to
     - exit: leave submenu
 - (if auto light is off) options &rarr; set auto scroll &rarr; set time format &rarr; set date format &rarr; set hourly chime &rarr; set auto light -> set brightness
 - (if auto light is on) options &rarr; set auto scroll &rarr; set time format &rarr; set date format &rarr; set hourly chime &rarr; set auto light -> set dark brightness -> set dim brightness -> set max brightness
+- weather (optional): enter submenu
+    - update weather now (issue call to OpenWeatherMap API for latest weather information)
+    - conditions (clear sky, overcast, rain, etc.)
+    - temp (display current temperature in Celsius/Fahrenheit per temperature toggle and OpenWeatherMap selection)
+    - wind speed (display current wind speed in mph/kmh per temperature toggle and OpenWeatherMap selection)
+    - wind direction (display compass degrees and cardinal direction)
+    - humidity (display percent humidity)
+    - pressure (display atmospheric pressure in hPa)
+    - sunrise (display sunrise in local time)
+    - sunset (display sunset in local time)
+    - last update time (show timestamp of last weather update)
+    - exit: leave submenu
 
 
 ## Clock synchronization
@@ -165,6 +182,7 @@ I tested this feature using a NEO-6M GPS module. It should work with other modul
 |GND       |GND     |
 
 When running the firmware, go to the "clock sync" submenu and set the sync source to "GPS".
+
 
 ## Configuring daylight saving time
 
@@ -198,3 +216,9 @@ With auto light, the brightness is automatically adjusted depending on the ambie
 - press "set"
 - if you need to adjust the brightness in a daylight conditions, you can use the "up" or "down" buttons to set the "max brightness" percentage
 - press "set"
+
+## Using optional Weather syncronization and display
+
+The optional display of weather information requires a Pico W for wireless connection, a configured WiFi connection with SSID and Password, and a no-cost (but valid credit card required) subscription to the OpenWeatherMap.org, "One Call 3.0 API".  It requires modification to the UserConfig.cmake file, and compilation of the source code to create a .uf2 file which is loaded to the Pico W.  Please review the information regarding the "One Call 3.0 API" on the OpenWeatherMap.org website.  The API allows up to 1000 free calls per day, but requires a valid credit card subsciption to pay for the number of calls greater than 1000.  The optional periodic weather updates will use less than 50 calls per day, unless the source code is modified.  The use of the Update Weather Now menu option will also use a "One Call 3.0 API" call.  You have the ability to limit the number of calls per day through the OpenWeatherMap.org website.  By subscribing to the 'One Call 3.0 API", your account will be provided with an API (appid) key which must be configured in the OPEN_WEATHER_MAP_URL field in the UserConfig.cmake file. You will also need to provide the longitude and latitude of the location representing the weather information.
+
+Please review the comments in the UserConfig.cmake file for more information regarding the configuration of the weather option.
