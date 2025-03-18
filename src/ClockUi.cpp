@@ -69,11 +69,12 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
         addFunctionAndReturnPtr<Submenu>(uiText(TextId::Stopwatch), &m_rootMenu);
     Submenu *syncSubmenu = 
         addFunctionAndReturnPtr<Submenu>(uiText(TextId::Sync), &m_rootMenu);
-    #ifdef INCLUDE_WEATHER    
-    Submenu *wxSubmenu =                                                            
+#ifdef INCLUDE_WEATHER
+    Submenu *weatherSubmenu =                                                            
         addFunctionAndReturnPtr<Submenu>(uiText(TextId::Weather), &m_rootMenu);     
-        m_wxMenu = wxSubmenu->menu();                                               // Save for use with AutoScroll
-    #endif        
+    m_weatherMenu = weatherSubmenu->menu(); // Save for use with AutoScroll
+#endif        
+
     addFunction<Options>();
 
     TRACE << "Add functions of the alarm submenu";
@@ -99,21 +100,20 @@ ClockUi::ClockUi() : m_clock(Display::FRAME_RATE, m_settings)
     syncSubmenu->addFunction<SyncInfo>(this, SyncInfo::LastSyncDrift);
     syncSubmenu->addFunction<WifiStatus>(this);
 
-    #ifdef INCLUDE_WEATHER
-    TRACE << "Add functions of the Wx submenu"; 
-    //  wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxName);                     // Name not supported by OpenWeatherMap 3.0 API
-    wxSubmenu->addFunction<Action>(this, uiText(TextId::SyncWxNow), std::bind(&Weather::syncWxNow, &m_weather)); // Index value = 0
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxConditions, &m_weather);       // Index value = 1
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxTemperature, &m_weather);      // Index value = 2
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWind, &m_weather);             // Index value = 3
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxWindDirection, &m_weather);    // Index value = 4
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxHumidity, &m_weather);         // Index value = 5
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxPressure, &m_weather);         // Index value = 6
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunrise, &m_weather);          // Index value = 7
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxSunset, &m_weather);           // Index value = 8
-    wxSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WxDateTime, &m_weather);         // Index value = 9
-    
-    #endif
+#ifdef INCLUDE_WEATHER
+    TRACE << "Add functions of the Weather submenu"; 
+    //  weatherSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::Name);                     // Name not supported by OpenWeatherMap 3.0 API
+    weatherSubmenu->addFunction<Action>(this, uiText(TextId::SyncWeatherNow), std::bind(&Weather::syncWeatherNow, &m_weather)); // Index value = 0
+    weatherSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::Conditions, &m_weather);       // Index value = 1
+    weatherSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::Temperature, &m_weather);      // Index value = 2
+    weatherSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::Wind, &m_weather);             // Index value = 3
+    weatherSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::WindDirection, &m_weather);    // Index value = 4
+    weatherSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::Humidity, &m_weather);         // Index value = 5
+    weatherSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::Pressure, &m_weather);         // Index value = 6
+    weatherSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::Sunrise, &m_weather);          // Index value = 7
+    weatherSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::Sunset, &m_weather);           // Index value = 8
+    weatherSubmenu->addFunction<WeatherInfo>(this, WeatherInfo::DateTime, &m_weather);         // Index value = 9
+#endif
 
     // Remember the last used time function in case auto scroll is enabled.
     if (m_currentMenu->at(m_curFuncIdx)->isTimeFunction())
@@ -154,9 +154,8 @@ void ClockUi::onFrameCallback()
 {
     // Make the clock and some functions tick
     bool clockAdjusted = false;
-    int tempInt;
     Settings::AlarmMode reachedAlarmMode = Settings::AlarmMode::Off;
-    m_clock.tick(clockAdjusted, reachedAlarmMode);  
+    m_clock.tick(clockAdjusted, reachedAlarmMode);
     m_countdownFunc->tick();
     m_stopwatchFunc->tick();
 
@@ -178,12 +177,12 @@ void ClockUi::onFrameCallback()
 #ifdef INCLUDE_WEATHER
         if (m_clock.get().tm_sec==0)
         {
-            tempInt = (m_clock.get().tm_min + 1) % 30; // If at top or bottom of hour, update the weather information
-            if (tempInt == 0 )
-                {  
-                TRACE << "ClockUi::onFrameCallback, Periodic Update of Weather Information \n";
-                m_weather.syncWxNow();
-                }
+            // If at top or bottom of hour, update the weather information
+            if ((m_clock.get().tm_min + 1) % 30 == 0)
+            {  
+                TRACE << "ClockUi::onFrameCallback, Periodic Update of Weather Information";
+                m_weather.syncWeatherNow();
+            }
         }     
 #endif           
         if (m_alarmRinging != Settings::AlarmMode::Off)
@@ -236,37 +235,37 @@ void ClockUi::onFrameCallback()
             }
         }
 
-// duplicating autoscroll for Weather submenu scrolling                                             
- 
+        // duplicating autoscroll for Weather submenu scrolling                                             
         if (m_settings.get().autoScroll &&                                                         
             m_editedValueIndex == NoEditing &&                                                      
-            m_currentMenu == m_wxMenu &&                                                            // Are we in the Weather menu?     
+            m_currentMenu == m_weatherMenu && // Are we in the Weather menu?
             m_secondsWithoutUserInput >= AUTO_SCROLL_DELAY_SEC)                                     
         {                                                                                           
             switch(m_clock.get().tm_sec)                                                            
             {                                                                                       
                 case 0:                                                                             
-                    m_curFuncIdx = m_WxLastUpdateFuncIdx;  // start with Update time   index of 9   
+                    m_curFuncIdx = m_weatherLastUpdateFuncIdx;  // start with Update time   index of 9   
                     startVertScrolling(-1);                                                         
                     break;                                                                          
  
                 case 12:      // 12 seconds                                                         
-                    m_curFuncIdx = m_WxTemperatureFuncIdx;    // The temperature index of 2         
+                    m_curFuncIdx = m_weatherTemperatureFuncIdx;    // The temperature index of 2         
+// TODO: make function shorter
                     startVertScrolling(-1);                                                         
                     break;                                                                          
 
                 case 24:  // 24 seconds                                                             
-                    m_curFuncIdx = m_WxWindFuncIdx;  // Then the Wind speed index of 3              
+                    m_curFuncIdx = m_weatherWindFuncIdx;  // Then the Wind speed index of 3              
                     startVertScrolling(-1);                                                         
                     break;                                                                          
  
                 case 36:  // 36 seconds                                                             
-                    m_curFuncIdx = m_WxWindDirectionFuncIdx; // Then the wind direction index of 4  
+                    m_curFuncIdx = m_weatherWindDirectionFuncIdx; // Then the wind direction index of 4  
                     startVertScrolling(-1);                                                         
                     break;                                                                          
 
                 case 48:  // 48 seconds                                                             
-                    m_curFuncIdx = m_WxConditionsFuncIdx;  // Then the conditions index of 1        
+                    m_curFuncIdx = m_weatherConditionsFuncIdx;  // Then the conditions index of 1        
                     startVertScrolling(-1);                                                         
                     break;                                                                          
             }                                                                                       
@@ -742,3 +741,5 @@ bool ClockUi::onAnyButtonTouched()
 
     return false;
 }
+
+// BOOKMARK for first refactoring

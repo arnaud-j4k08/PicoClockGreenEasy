@@ -74,7 +74,7 @@ enum class TextId
     Ntp,
     Gps,
 
-    // Weather related Text.  Associated with WxInfo structure 
+    // Weather related Text.  Associated with WeatherInfo structure 
     Weather,        
     Conditions,     
     Temperature,    
@@ -86,7 +86,7 @@ enum class TextId
     Sunrise,        
     Sunset,         
     CityName,       
-    SyncWxNow,      
+    SyncWeatherNow,      
     LastUpdate,     
 
     TextCount

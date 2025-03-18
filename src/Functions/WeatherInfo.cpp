@@ -5,6 +5,7 @@
 
 namespace
 {
+    // TODO: share implementation with the other one in SyncInfo.cpp
     std::string to2DigitsString(int number)
     {
         std::string s = std::to_string(number);
@@ -17,21 +18,19 @@ namespace
 void WeatherInfo::renderFrame(
     Bitmap &frame, int editedValueIndex, int blinkingCounter, bool fullRefresh) 
 {
-    Weather::WxInfo info;
-    m_weather->wxInfo(info);
+    Weather::WeatherInfo info;
+    m_weather->weatherInfo(info);
 
     std::string text;
     bool morning;
-    time_t WxTime = 0; // UTC time as unix time, local,  not considering DST
-    tm Wxtm = {}; // Current time as tm, not considering DST
     switch (m_entry)
     {
-        case WxConditions:
+        case Conditions:
             text = 
                 uiText(TextId::Conditions) + 
                 (info.conditions);
             break;
-        case WxTemperature:
+        case Temperature:
             char tempString[6];
             sprintf(tempString, "%5.2f", info.ctemp);
             
@@ -43,17 +42,17 @@ void WeatherInfo::renderFrame(
             else
                 frame.putIndicator(Bitmap::F, true);   
             break;  
-         case WxPressure:
+         case Pressure:
             text = 
                 uiText(TextId::Pressure) + 
                 std::to_string(info.pressure);
             break; 
-        case WxHumidity:
+        case Humidity:
             text = 
                 uiText(TextId::Humidity) + 
                 std::to_string(info.humidity) + " %";
             break; 
-        case WxWind:
+        case Wind:
             char tempString2[6];
             sprintf(tempString2, "%5.2f", info.windSpeed);
             if (settings().useCelsius)
@@ -65,37 +64,41 @@ void WeatherInfo::renderFrame(
                 text = 
                 uiText(TextId::WindSpeed) + tempString2 + " MPH";
             break; 
-        case WxWindDirection:
+        case WindDirection:
             text = 
                 uiText(TextId::WindDir) + info.windCardinal + " (" + std::to_string(info.windDegree) + ")";
             break;          
-        case WxSunrise:   
-            WxTime = info.sunRise + info.wxTimezone;  //  Remove the UTC offset in seconds.  This gives us local time
-            Wxtm = *localtime(&WxTime); 
+        case Sunrise:
+        {
+            time_t weatherTime = info.sunRise + info.timezone;  //  Remove the UTC offset in seconds.  This gives us local time
+            tm weatherTm = *localtime(&weatherTime); 
 
-            text =
-                uiText(TextId::Sunrise) + timeToString(Wxtm, morning);
+            text = uiText(TextId::Sunrise) + timeToString(weatherTm, morning);
             putAmPmIndicators(frame, morning);
             break;
-        case WxDateTime:   
-            WxTime = info.wxDateTime + info.wxTimezone;  //  Remove the UTC offset in seconds.  This gives local time
-            Wxtm = *localtime(&WxTime); 
+        }
+        case DateTime:
+        {
+            time_t weatherTime = info.dateTime + info.timezone;  //  Remove the UTC offset in seconds.  This gives local time
+            tm weatherTm = *localtime(&weatherTime); 
 
             text =
-                uiText(TextId::LastUpdate) + timeToString(Wxtm, morning) +
-                " " + dateToString(Wxtm); 
+                uiText(TextId::LastUpdate) + timeToString(weatherTm, morning) +
+                " " + dateToString(weatherTm); 
             putAmPmIndicators(frame, morning);
 
-            break;            
-        case WxSunset:   
-            WxTime = info.sunSet + info.wxTimezone;  //  Remove the UTC offset in seconds.  This gives us local time
-            Wxtm = *localtime(&WxTime); 
+            break;
+        }
+        case Sunset:
+        {
+            time_t weatherTime = info.sunSet + info.timezone;  //  Remove the UTC offset in seconds.  This gives us local time
+            tm weatherTm = *localtime(&weatherTime); 
 
-            text =
-                uiText(TextId::Sunset) + timeToString(Wxtm, morning);
+            text = uiText(TextId::Sunset) + timeToString(weatherTm, morning);
             putAmPmIndicators(frame, morning);
             break;
-        case WxName:
+        }
+        case Name:
             text = 
                 uiText(TextId::CityName) + 
                 (info.cityName);

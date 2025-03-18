@@ -8,19 +8,20 @@ class WeatherInfo : public AbstractFunction
 public:
     enum Entry
     {
-        WxConditions,
-        WxTemperature,
-        WxPressure,
-        WxHumidity,
-        WxWind,
-        WxWindDirection,
-        WxSunrise,
-        WxSunset,
-        WxName,  // Not currently supported in OpenWeatherMap 3.0 API
-        WxDateTime,
+        Conditions,
+        Temperature,
+        Pressure,
+        Humidity,
+        Wind,
+        WindDirection,
+        Sunrise,
+        Sunset,
+        Name,  // Not currently supported in OpenWeatherMap 3.0 API
+        DateTime,
     };
     
-    WeatherInfo(ClockUi *clockUi, Entry entry, Weather *weather) : AbstractFunction(clockUi), m_entry(entry), m_weather(weather)
+    WeatherInfo(ClockUi *clockUi, Entry entry, Weather *weather) : 
+        AbstractFunction(clockUi), m_entry(entry), m_weather(weather)
     {}
 
 private:

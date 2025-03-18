@@ -1,4 +1,5 @@
 #pragma once
+
 // Make a global function that calls the method of the given Class so that it is suitable for 
 // passing to a C function that expects a function pointer as callback. The type parameter 
 // determines where the user pointer is placed in the parameters of the global function. This user

@@ -2,7 +2,6 @@
 #include "Utils/Trace.h"
 #include "PicoClockHw/Wifi.h"
 #include "PicoClockHw/Platform.h"
-#include <functional>
 
 Clock::Clock(int tickPerSec, Settings &settings) : 
     m_tickCount(tickPerSec), 
@@ -32,9 +31,7 @@ Clock::Clock(int tickPerSec, Settings &settings) :
 
     // Initialize GPS synchronization. NTP will be initialized later, as it requires the Wi-Fi to be
     // initialized.
-                                                                                               
     using namespace std::placeholders;                                               
-                    
     m_gps.setTimeCallback(
         std::bind(&Clock::onExternalTimeReceived, this, _1, _2, Settings::SyncSource::Gps));
     m_gps.setTimeoutCallback([this]()
@@ -107,7 +104,6 @@ void Clock::startNtpSync()
     if (status != Wifi::Connected)
     {
         TRACE << "Wifi::connectAsync";
-
         using namespace std::placeholders;
         if (Wifi::connectAsync(std::bind(&Clock::onWifiConnectionFinished, this, _1)))
         {
@@ -130,6 +126,7 @@ void Clock::startGpsSync()
     m_gps.setEnabled(true);
     m_extSync = GpsInProgress;
 }
+
 void Clock::onWifiConnectionFinished(bool success)
 {
     if (success)
@@ -140,9 +137,7 @@ void Clock::onWifiConnectionFinished(bool success)
             m_ntp->startRequest();
             TRACE << "Request started";
             m_extSync = NtpInProgress;
-        }
-
-        if (!m_ntp)
+        } else
             m_extSync = Inactive;
 
     } else
@@ -224,7 +219,7 @@ void Clock::tick(bool &clockAdjusted, Settings::AlarmMode &reachedAlarmMode)
     if (m_tickCount == 0 && m_tm.tm_sec == 0)
     {
         reachedAlarmMode = checkIfAlarmReached();
-        int tempInt = 0;
+
         // Perform the daily synchronization if the time is reached.
         if (m_tm.tm_min == m_syncInfo.dailySyncMin && m_tm.tm_hour == m_syncInfo.dailySyncHour)
             syncNow();
@@ -236,7 +231,6 @@ void Clock::tick(bool &clockAdjusted, Settings::AlarmMode &reachedAlarmMode)
         clockAdjusted = true;
     } 
 }
-
 
 Settings::AlarmMode Clock::checkIfAlarmReached()
 {

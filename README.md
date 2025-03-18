@@ -154,7 +154,6 @@ This is the full definition of the menu structure. Use the "enter/set" button to
     - last update time (show timestamp of last weather update)
     - exit: leave submenu
 
-
 ## Clock synchronization
 At start-up, the clock synchronizes itself with the source selected in the "clock sync" submenu. It then synchronizes itself again every day at a random time generated at start-up. A synchronization can also be triggered manually using the "sync now" function. Whenever a synchronization is in progress, the °F and °C indicators blink slowly.
 
@@ -167,7 +166,6 @@ If you have a Pico W, you can use NTP to synchronize date/time at start-up. For 
 This configuration is done by setting the WIFI_SSID and WIFI_PASSWORD macros in the UserConfig.cmake file (between the escaped quotes). Additionally, the UTC offset also needs to be set in UTC_OFFSET, as the NTP server provides UTC time and does not know where you are located. After configuring, follow the steps of the "Building from the source code" section above. 
 
 When running the firmware, go the the "clock sync" submenu and set the sync source to "NTP". You can use the "wifi" function to check if your settings are working. Note that the Wi-Fi connection will only be attempted when actually synchronizing (at start-up or manually). The connection is then kept open.
-
 
 ### Using GPS synchronization
 

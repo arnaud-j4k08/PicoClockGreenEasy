@@ -66,7 +66,7 @@ namespace
             "NTP",
             "GPS",
 
-        // Weather related Text.  Associated with WxInfo structure 
+        // Weather related Text.  Associated with WeatherInfo structure 
             "Weather",                  
             "Conditions: ",             
             "Temp: ",                   

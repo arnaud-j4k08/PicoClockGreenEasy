@@ -30,7 +30,6 @@ public:
         int lastSyncDriftMs = 0;
     };
 
-
     // Beware that the object keeps a reference on settings, so it must exists at least as long as
     // the object.
     Clock(int tickPerSec, Settings &settings);
@@ -41,7 +40,7 @@ public:
         m_rtcSync = SyncingToRtc;
     }
     
-    void tick(bool &clockAdjusted, Settings::AlarmMode &reachedAlarmMode); 
+    void tick(bool &clockAdjusted, Settings::AlarmMode &reachedAlarmMode);
     bool nextAlarm(int &weekday, int &hour, int &min) const;
 
     bool isAlarmOn() const
@@ -131,7 +130,7 @@ private:
         Inactive,
         NtpWaitingForWifi,
         NtpInProgress,
-        GpsInProgress,
+        GpsInProgress
     };
 
     CyclicCounter m_tickCount;
@@ -151,5 +150,4 @@ private:
     tm m_tm = {}; // Current time as tm, considering DST
 
     bool m_clockAdjusted = true;
-    
 };

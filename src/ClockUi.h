@@ -12,7 +12,6 @@
 #include "Weather.h"
 #endif
 
-
 class Countdown;
 class Stopwatch;
 
@@ -28,7 +27,7 @@ public:
     {
         m_clock.onWifiInited();
 #ifdef INCLUDE_WEATHER 
-        m_weather.syncWxNow();
+        m_weather.syncWeatherNow();
 #endif        
     }
 
@@ -60,19 +59,19 @@ private:
     // Menu and functions
     std::vector<std::unique_ptr<AbstractFunction>> *m_currentMenu = &m_rootMenu;
     std::vector<std::unique_ptr<AbstractFunction>> m_rootMenu;
-    std::vector<std::unique_ptr<AbstractFunction>> *m_wxMenu = nullptr;         
+    std::vector<std::unique_ptr<AbstractFunction>> *m_weatherMenu = nullptr;         
     int m_curFuncIdx = 0;
     int m_dateFuncIdx = 0;
     int m_temperatureFuncIdx = 0;
 
 //  Indexes for Weather Auto Scrolling  // Index values are determined by the order that a function is added to Weather Submenu
-//  int m_WxNameFuncIdx = 0;            // If the Weather Submenu functions are re-ordered, or functions removed/added, these
-    int m_WxConditionsFuncIdx = 1;      // values will need to be adjusted.
-    int m_WxTemperatureFuncIdx = 2;     
-    int m_WxWindFuncIdx = 3;            
-    int m_WxWindDirectionFuncIdx = 4;      
-    int m_WxHumidityFuncIdx = 5;        
-    int m_WxLastUpdateFuncIdx = 9;      
+//  int m_weatherNameFuncIdx = 0;            // If the Weather Submenu functions are re-ordered, or functions removed/added, these
+    int m_weatherConditionsFuncIdx = 1;      // values will need to be adjusted.
+    int m_weatherTemperatureFuncIdx = 2;     
+    int m_weatherWindFuncIdx = 3;            
+    int m_weatherWindDirectionFuncIdx = 4;      
+    int m_weatherHumidityFuncIdx = 5;        
+    int m_weatherLastUpdateFuncIdx = 9;      
 
     Stopwatch *m_stopwatchFunc = nullptr;
     Countdown *m_countdownFunc = nullptr;

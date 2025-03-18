@@ -9,13 +9,13 @@ int main()
     Platform::initStdIo();
 
     // Can be enabled to delay startup in order to debug
-//#if 0
-    for (int i = 15; i > 0;i--)
+#if 0
+    for (int i = 1; i > 0; i--)
     {
         sleep_ms(1000);
         std::cout << i << std::endl;
     }
-//#endif
+#endif
     TRACE << "Clock UI";
     ClockUi ui;
 

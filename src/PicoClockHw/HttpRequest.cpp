@@ -121,4 +121,3 @@ void HttpRequest::onTransferComplete(
     if (m_onCompleteCallback)
         m_onCompleteCallback(m_content);
 }
-

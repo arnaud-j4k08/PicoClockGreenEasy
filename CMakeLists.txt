@@ -1,18 +1,3 @@
-# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
-if(WIN32)
-    set(USERHOME $ENV{USERPROFILE})
-else()
-    set(USERHOME $ENV{HOME})
-endif()
-set(sdkVersion 2.1.0)
-set(toolchainVersion 13_3_Rel1)
-set(picotoolVersion 2.1.0)
-set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
-if (EXISTS ${picoVscode})
-    include(${picoVscode})
-endif()
-# ====================================================================================
-set(PICO_BOARD pico_w CACHE STRING "Board type")
 # Include the user configuration. The UserConfig.cmake at the root of the repo can be overriden by 
 # another UserConfig.cmake file one directory upper (outside of the repo to avoid having to modify 
 # it).
@@ -24,13 +9,16 @@ endif()
 
 cmake_minimum_required(VERSION 3.13)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
-
 # initialize the SDK based on PICO_SDK_PATH
 # note: this must happen before project()
 include(pico_sdk_import.cmake)
 
 project(PicoClockGreenEasy)
+
+if (INCLUDE_WEATHER)
+        # src/Weather.cpp uses exceptions
+        set(PICO_CXX_ENABLE_EXCEPTIONS 1)
+endif()
 
 # initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
@@ -46,7 +34,6 @@ add_executable( ${PROJECT_NAME}
                 src/fonts.cpp
                 src/Settings.cpp
                 src/UiTexts.cpp
-
 
                 src/Functions/AbstractFunction.cpp
                 src/Functions/Alarm.cpp
@@ -113,28 +100,26 @@ if (INCLUDE_WEATHER)
                 pico_lwip_http
                 pico_lwip_mbedtls
                 pico_mbedtls)
+        
         # Ignore warnings from lwip code
         set_source_files_properties(
                 ${PICO_LWIP_PATH}/src/apps/altcp_tls/altcp_tls_mbedtls.c
                 ${PICO_LWIP_PATH}/src/apps/http/altcp_proxyconnect.c
                 PROPERTIES
                 COMPILE_OPTIONS "-Wno-unused-result;-Wno-incompatible-pointer-types")        
-
-
 endif()
 
 if (PICO_CYW43_SUPPORTED) # set by the pico_w.cmake file of the Pico SDK when PICO_BOARD=pico_w
         target_compile_definitions(${PROJECT_NAME} PRIVATE 
-        PICO_CYW43_SUPPORTED
-        WIFI_SSID=\"${WIFI_SSID}\"
-        WIFI_PASSWORD=\"${WIFI_PASSWORD}\")
+                PICO_CYW43_SUPPORTED
+                WIFI_SSID=\"${WIFI_SSID}\"
+                WIFI_PASSWORD=\"${WIFI_PASSWORD}\")
 
         target_sources(${PROJECT_NAME} PRIVATE
                 src/PicoClockHw/Ntp.cpp 
                 src/PicoClockHw/Wifi.cpp)
         target_link_libraries(${PROJECT_NAME}
-                pico_cyw43_arch_lwip_threadsafe_background)
-         
+                pico_cyw43_arch_lwip_threadsafe_background)        
 endif()
 
 # create map/bin/hex/uf2 file in addition to ELF.
@@ -147,4 +132,3 @@ pico_enable_stdio_uart(${PROJECT_NAME} 0)
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src    
     ${CMAKE_CURRENT_LIST_DIR}/src/PicoClockHw/Config)
-

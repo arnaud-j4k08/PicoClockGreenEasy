@@ -168,13 +168,14 @@ std::string Wifi::linkStatusToString(Status s)
 
     return "";
 }
+
 void Wifi::disconnect()
 {
     TRACE << "In Wifi::disconnect";
     cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
 }
 
-void Wifi::cycle_sta_mode()
+void Wifi::cycleStationMode()
 {
     cyw43_arch_disable_sta_mode();
     TRACE << "In Wifi::cycle_sta_mode after disable sta mode";
