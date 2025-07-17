@@ -24,6 +24,9 @@ void Temperature::renderFrame(
     TRACE << "Get temperature";
     float temp = clock().rtc()->temperature();
 
+    // RTC Temperature calibration 
+    temp += RTC_TEMP_CALIB;
+
     if (std::isnan(temp))
         return;
 
