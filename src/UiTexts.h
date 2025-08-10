@@ -37,6 +37,7 @@ enum class TextId
     DateFormatColon,
     HourlyChimeColon,
     AutoScrollColon,
+    DigitAnimation,
     BrightnessColon,
     BrightnessDarkColon,
     BrightnessDimColon,

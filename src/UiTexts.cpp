@@ -31,6 +31,7 @@ const char *g_textTable<TextId>[][LanguageCount] =
     {"Date format: ", "Date: Format: "},
     {"Hourly chime: ", "Carillon horaire: "},
     {"Auto scroll: ", "Defilement auto: "},
+    {"Digit animation: ", "Animation des chiffres: "},
     {"Brightness: ", "Reglage Luminosite: "},
     {"Dark brightness: ", "Env noir: Luminosite: "},
     {"Dim brightness: ", "Env sombre: Luminosite: "},

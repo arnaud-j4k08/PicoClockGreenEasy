@@ -32,7 +32,8 @@ public:
     void setDrawOrigin(int x, int y);
 
     void setFont(const Font *font);
-    bool pixel(int x, int y) const; // Does not consider the draw origin
+    bool rawPixel(int x, int y) const; // Does not consider the draw origin
+    bool pixel(int x, int y) const; 
     void putPixel(int x, int y, bool on);
     void drawRectangle(int left, int top, int right, int bottom, bool on);
     void moveRectangle(int left, int top, int right, int bottom, int vertShift);
@@ -53,10 +54,10 @@ public:
     void drawMiddleDots();
 
 private:
-    void considerDrawOrigin(int &x, int &y);
-    void unconsiderDrawOrigin(int &x, int &y);
+    void considerDrawOrigin(int &x, int &y) const;
+    void unconsiderDrawOrigin(int &x, int &y) const;
 
     uint32_t m_frameBuffer[HEIGHT];
-    int m_drawOriginX, m_drawOriginY;
+    int m_drawOriginX = 0, m_drawOriginY = 0;
     const Font *m_currentFont = nullptr;
 };

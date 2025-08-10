@@ -15,6 +15,7 @@ private:
     {
         NoEditing = 0,
         EditingAutoScroll,
+        EditingDigitAnimation,
         EditingTimeFormat,
         EditingDateFormat,
         EditingHourlyChimeMode,

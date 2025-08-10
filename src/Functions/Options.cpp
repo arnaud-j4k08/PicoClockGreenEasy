@@ -25,6 +25,13 @@ void Options::renderFrame(Bitmap &frame, int editedValueIndex, int blinkingCount
                 uiText(TextId::AutoScrollColon), 
                 settings().autoScroll ? uiText(TextId::On) : uiText(TextId::Off));
             break;
+        case EditingDigitAnimation:
+            renderScrollingText(
+                frame, 
+                fullRefresh, 
+                uiText(TextId::DigitAnimation), 
+                settings().digitAnimation ? uiText(TextId::On) : uiText(TextId::Off));
+            break;
         case EditingTimeFormat:
             renderScrollingText(
                 frame, 
@@ -120,6 +127,10 @@ void Options::modifyValue(int valueIndex, Direction direction)
     {
         case EditingAutoScroll:
             toggleBool(modifySettings().autoScroll);
+            break;
+
+        case EditingDigitAnimation:
+            toggleBool(modifySettings().digitAnimation);
             break;
 
         case EditingTimeFormat:

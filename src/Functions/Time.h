@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AbstractFunction.h"
+#include "AnimatedChar.h"
 
 class Bitmap;
 
@@ -49,4 +50,8 @@ private:
     int putAmPmAndConvertCurrentHour(Bitmap &frame);
 
     const Style m_style;
+    AnimatedChar m_digit1 { 0, 0};
+    AnimatedChar m_digit2 { 5, 0};
+    AnimatedChar m_digit3 { 13, 0};
+    AnimatedChar m_digit4 { 18, 0};
 };

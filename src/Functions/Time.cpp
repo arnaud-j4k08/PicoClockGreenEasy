@@ -2,6 +2,7 @@
 #include "fonts.h"
 #include "Bitmap.h"
 #include "Clock.h"
+#include "Utils/Trace.h"
 
 void Time::renderFrame(Bitmap &frame, int editedValueIndex, int blinkingCounter, bool fullRefresh)
 {
@@ -154,22 +155,50 @@ void Time::renderHourMinProgressBar(
 void Time::renderHourMin(
     Bitmap &frame, int editedValueIndex, int blinkingCounter, bool fullRefresh)
 {
-    if (editedValueIndex != NoEditing && 
-        (blinkingCounter == 0 || blinkingCounter == BLINKING_DISAPPEAR_FRAME))
-        fullRefresh = true;
+    // TODO: use it also for the thermometer
+    // TODO: °F and °C indicators do not always turn off after end of synchronization
 
-    if (fullRefresh || (clock().get().tm_sec == 0 && clock().tickCount() == 0))
+    if (settings().digitAnimation && editedValueIndex == NoEditing)
     {
-        frame.clear();
-        frame.setFont(&classicFont);
+        if (fullRefresh)
+            frame.clear();
 
-        int displayedHour = putAmPmAndConvertCurrentHour(frame);
-        if (editedValueIndex != EditingHour || blinkingCounter < BLINKING_DISAPPEAR_FRAME)
-            frame.draw2DigitsInt(0, 0, displayedHour);
+        AnimatedChar::render2DigitsInt(
+            m_digit1, m_digit2, frame, fullRefresh, putAmPmAndConvertCurrentHour(frame));
 
-        if (editedValueIndex != EditingMinute || blinkingCounter < BLINKING_DISAPPEAR_FRAME)
-            frame.draw2DigitsIntWithLeadingZero(13, 0, clock().get().tm_min);
+        AnimatedChar::render2DigitsIntWithLeadingZero(
+            m_digit3, m_digit4, frame, fullRefresh, clock().get().tm_min);
 
+        if (fullRefresh ||
+            (clock().tickCount() == 0 && 
+            clock().get().tm_sec == 0 && 
+            clock().get().tm_min == 0 && 
+            clock().get().tm_hour == 0))
+        {
+            TRACE << "Full refresh or day just changed, so redraw the week day";
+            frame.putWeekDays(1 << clock().get().tm_wday);
+        }
+    } 
+    else
+    {
+        if (editedValueIndex != NoEditing && 
+            (blinkingCounter == 0 || blinkingCounter == BLINKING_DISAPPEAR_FRAME))
+            fullRefresh = true;
+
+        if (fullRefresh || (clock().get().tm_sec == 0 && clock().tickCount() == 0))
+        {
+            frame.clear();
+            frame.setFont(&classicFont);
+
+            int displayedHour = putAmPmAndConvertCurrentHour(frame);
+            if (editedValueIndex != EditingHour || blinkingCounter < BLINKING_DISAPPEAR_FRAME)
+                frame.draw2DigitsInt(0, 0, displayedHour);
+        
+            if (editedValueIndex != EditingMinute || blinkingCounter < BLINKING_DISAPPEAR_FRAME)
+                    frame.draw2DigitsIntWithLeadingZero(13, 0, clock().get().tm_min);
+        }
+
+        putWeekDay(frame);
     }
 
     if (fullRefresh || clock().tickCount() == 0)
@@ -177,8 +206,6 @@ void Time::renderHourMin(
         bool dotVisible = clock().get().tm_sec % 2 != 0;
         frame.drawRectangle(10, 1, 11, 2, dotVisible);
         frame.drawRectangle(10, 4, 11, 5, dotVisible);
-
-        putWeekDay(frame);
     }
 }
 

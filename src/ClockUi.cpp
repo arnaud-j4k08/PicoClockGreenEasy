@@ -393,7 +393,7 @@ void ClockUi::handleControlFromConsole()
             std::string s;
             for (int x = 0; x < Display::WIDTH; x++)
             {
-                if (m_frameBuffer.pixel(x, y))
+                if (m_frameBuffer.rawPixel(x, y))
                     s += "#";
                 else
                     s += " ";

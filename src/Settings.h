@@ -101,6 +101,7 @@ public:
         int flashlightBrightness = 50;
         int chimeSoundVolume = 30;
         AlarmMusic alarmMusic[2];
+        bool digitAnimation = true;
     };
 
     Settings();

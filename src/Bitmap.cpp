@@ -43,23 +43,29 @@ void Bitmap::setDrawOrigin(int x, int y)
     m_drawOriginY = y;
 }
 
-void Bitmap::considerDrawOrigin(int &x, int &y)
+void Bitmap::considerDrawOrigin(int &x, int &y) const
 {
     x += m_drawOriginX;
     y += m_drawOriginY;
 }
 
-void Bitmap::unconsiderDrawOrigin(int &x, int &y)
+void Bitmap::unconsiderDrawOrigin(int &x, int &y) const
 {
     x -= m_drawOriginX;
     y -= m_drawOriginY;
 }
 
-bool Bitmap::pixel(int x, int y) const
+bool Bitmap::rawPixel(int x, int y) const
 {
     uint32_t mask = 1 << (31 - x%32);
 
     return m_frameBuffer[y] & mask;
+}
+
+bool Bitmap::pixel(int x, int y) const
+{
+    considerDrawOrigin(x, y);
+    return rawPixel(x, y);
 }
 
 void Bitmap::putPixel(int x, int y, bool on)

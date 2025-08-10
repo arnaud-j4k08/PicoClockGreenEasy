@@ -19,6 +19,7 @@ project(PicoClockGreenEasy)
 pico_sdk_init()
 
 add_executable( ${PROJECT_NAME}
+                src/AnimatedChar.cpp
                 src/Bitmap.cpp
                 src/Clock.cpp
                 src/DaylightSavingTime.cpp

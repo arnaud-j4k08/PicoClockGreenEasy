@@ -23,6 +23,7 @@ This project is an easy-to-use firmware for the Waveshare Pico-Clock-Green writt
     - menu based user interface with horizontal and vertical scrolling
     - instant start up: no splash screen or animation, just power the device and you have a clock
     - 3 time display styles: hour:min:sec, hour:min + bar (the bar is a kind of horizontal hourglass to show seconds), hour:min
+    - digit animation: If enabled, whenever it is time for a digit to change, it gets progressively transformed into the next one, creating an interesting visual effect. This is used when displaying time in the hour:min style.
     - configurable date format: 5 formats with different orders and separators
     - configurable brightness: 
       - if auto light is disabled, the brightness can be set as a percentage
@@ -142,8 +143,8 @@ This is the full definition of the menu structure. Use the "enter/set" button to
     - last drift (show how much the internal clock had drifted last time it was synchronized, no actual function)
     - wifi (show wifi connection status, no actual function)
     - exit: leave submenu
-- (if auto light is off) options &rarr; set auto scroll &rarr; set time format &rarr; set date format &rarr; set hourly chime &rarr; set chime volume (if sound effect selected) &rarr; set auto light -> set brightness
-- (if auto light is on) options &rarr; set auto scroll &rarr; set time format &rarr; set date format &rarr; set hourly chime &rarr; set chime volume (if sound effect selected) &rarr; set auto light -> set dark brightness -> set dim brightness -> set max brightness
+- (if auto light is off) options &rarr; set auto scroll &rarr; set digit animation &rarr; set time format &rarr; set date format &rarr; set hourly chime &rarr; set chime volume (if sound effect selected) &rarr; set auto light -> set brightness
+- (if auto light is on) options &rarr; set auto scroll &rarr; set digit animation &rarr; set time format &rarr; set date format &rarr; set hourly chime &rarr; set chime volume (if sound effect selected) &rarr; set auto light -> set dark brightness -> set dim brightness -> set max brightness
 
 
 ## Clock synchronization

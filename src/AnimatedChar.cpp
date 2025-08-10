@@ -1,0 +1,156 @@
+#include "AnimatedChar.h"
+#include "Bitmap.h"
+#include "PicoClockHw/Platform.h"
+#include "Utils/Trace.h"
+
+void AnimatedChar::render2DigitsInt(
+    AnimatedChar &digit1, AnimatedChar &digit2, Bitmap &frame, bool fullRefresh, int i)
+{
+    digit1.renderChar(frame, fullRefresh, i < 10 ? ' ' : '0' + i / 10);
+    digit2.renderChar(frame, fullRefresh, '0' + i % 10);
+}
+
+void AnimatedChar::render2DigitsIntWithLeadingZero(
+    AnimatedChar &digit1, AnimatedChar &digit2, Bitmap &frame, bool fullRefresh, int i)
+{
+    digit1.renderChar(frame, fullRefresh, '0' + i / 10);
+    digit2.renderChar(frame, fullRefresh, '0' + i % 10);
+}
+
+void AnimatedChar::renderChar(Bitmap &frame, bool fullRefresh, char c)
+{
+    if (m_targetChar != c)
+    {
+        TRACE  <<"Change target char from" << m_targetChar << "to" << c;
+        m_targetChar = c;
+        m_targetCharBitmap.clear();
+        m_targetCharBitmap.setFont(&classicFont);
+        m_targetCharBitmap.drawChar(0, 0, c);
+        m_transitioning = true;
+    }
+
+    if (fullRefresh)
+        m_transitioning = true;
+
+    if (!m_transitioning)
+        return;
+
+    if (!m_frameCounter.increment())
+        return; // Do not render the character yet to slow down the animation
+
+    // Count how many pixels are currently on for the current character.
+    int pixelCount = 0;
+    for (int y = 0; y < classicFont.height; ++y)
+    {
+        for (int x = 0; x < classicFont.width; ++x)
+        {
+            if (frame.pixel(m_x + x, m_y + y))
+                pixelCount++;
+        }
+    }
+
+    if (pixelCount == 0)
+    {
+        if (m_targetChar == ' ')
+        {
+            // Do not draw anything if the target char is a space and stop transitioning, as there
+            // are already no pixels.
+            m_transitioning = false;
+            return; 
+        }
+        TRACE << "Draw a dot in the middle if no pixels";
+        frame.putPixel(
+            m_x + classicFont.width / 2, m_y + classicFont.height / 2, true);
+    } 
+    else
+    {
+        // Track moveable pixel in a bitset, to be able to detect when there wile be no moveable 
+        // ones anymore.
+        // TODO: use std::bitset instead
+        uint32_t moveablePixels = 0;
+        for (int i = 0; i < pixelCount; i++)
+            moveablePixels |= (1 << i);
+
+        // Loop until a pixel to move is found or all pixels have been moved.
+        while (moveablePixels != 0)
+        {
+            int pixelRank = Platform::randomNumber32() % pixelCount;
+
+            if (!(moveablePixels & (1 << pixelRank)))
+                continue; // Skip already checked pixels
+
+            int x, y;
+            pixelCoordAtRank(frame, x, y, pixelRank);
+
+            // Adopt the state of this pixel in the target character.
+            bool moved = false; 
+            if (frame.pixel(m_x + x, m_y + y) != m_targetCharBitmap.pixel(x, y))
+            {
+                frame.putPixel(m_x + x, m_y + y, m_targetCharBitmap.pixel(x, y));
+                moved = true;
+            }
+            
+            // Check if the state of the pixel can also be moved to a neighbor pixel. If so, move it.
+            struct Coord
+            {
+                int x, y;
+            };
+            Coord neighbors[] = {
+                {-1, 0}, {0, -1}, {0, 1}, {1, 0}, 
+                {1, 1}, {-1, -1}, {-1, 1},{1, -1},
+            };
+            // TODO: randomize the order of neighbors
+            for (const auto &n : neighbors)
+            {
+                if (x + n.x < 0 || x + n.x >= classicFont.width ||
+                    y + n.y < 0 || y + n.y >= classicFont.height)
+                    continue; // Skip out of bounds neighbors
+
+                if (m_targetCharBitmap.pixel(x + n.x, y + n.y) &&
+                    !frame.pixel(m_x + x + n.x, m_y + y + n.y))
+                {
+                    frame.putPixel(m_x + x + n.x, m_y + y + n.y, true);
+                    moved = true;
+                    break;
+                }
+            } 
+
+            // Leave the loop if a pixel has been move.
+            if (moved)
+//TODO: shorten the method
+            {
+                TRACE << "Moved pixel at" << x << y;
+                break;
+            }
+            else
+            {
+                moveablePixels &= ~(1 << pixelRank); // Remove this pixel from the moveable pixels
+            }
+        }
+
+        if (moveablePixels == 0)
+        {
+            TRACE << "All pixels moved";
+          
+            
+            // If all pixels have been moved, stop transitioning.
+            m_transitioning = false;
+        }
+    }
+}
+
+void AnimatedChar::pixelCoordAtRank(Bitmap &frame, int &x, int &y, int pixelRank)
+{
+    for (y = 0; y < classicFont.height; ++y)
+    {
+        for (x = 0; x < classicFont.width; ++x)
+        {
+            if (frame.pixel(m_x + x, m_y + y))
+            {
+                if (pixelRank == 0)
+                    return;
+                pixelRank--;
+            }
+        }
+    }
+}
