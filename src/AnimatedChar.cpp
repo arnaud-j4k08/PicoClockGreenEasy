@@ -2,6 +2,7 @@
 #include "Bitmap.h"
 #include "PicoClockHw/Platform.h"
 #include "Utils/Trace.h"
+#include <bitset>
 
 void AnimatedChar::render2DigitsInt(
     AnimatedChar &digit1, AnimatedChar &digit2, Bitmap &frame, bool fullRefresh, int i)
@@ -64,19 +65,18 @@ void AnimatedChar::renderChar(Bitmap &frame, bool fullRefresh, char c)
     } 
     else
     {
-        // Track moveable pixel in a bitset, to be able to detect when there wile be no moveable 
+        // Track moveable pixel in a bitset, to be able to detect when there will be no moveable 
         // ones anymore.
-        // TODO: use std::bitset instead
-        uint32_t moveablePixels = 0;
+        std::bitset<28> moveablePixels; // one bit for each pixel of a character of the classicFont
         for (int i = 0; i < pixelCount; i++)
-            moveablePixels |= (1 << i);
+            moveablePixels.set(i);
 
         // Loop until a pixel to move is found or all pixels have been moved.
-        while (moveablePixels != 0)
+        while (moveablePixels.any())
         {
             int pixelRank = Platform::randomNumber32() % pixelCount;
 
-            if (!(moveablePixels & (1 << pixelRank)))
+            if (!(moveablePixels.test(pixelRank)))
                 continue; // Skip already checked pixels
 
             int x, y;
@@ -99,12 +99,28 @@ void AnimatedChar::renderChar(Bitmap &frame, bool fullRefresh, char c)
                 {-1, 0}, {0, -1}, {0, 1}, {1, 0}, 
                 {1, 1}, {-1, -1}, {-1, 1},{1, -1},
             };
-            // TODO: randomize the order of neighbors
-            for (const auto &n : neighbors)
+            static const int NEIGHBORS_COUNT = sizeof(neighbors) / sizeof(Coord);
+
+            std::bitset<NEIGHBORS_COUNT> neighborsToCheck;
+            for (int i = 0; i < NEIGHBORS_COUNT; i++)
+                neighborsToCheck.set(i);
+
+            while (neighborsToCheck.any())
             {
+                int i = Platform::randomNumber32() % NEIGHBORS_COUNT;
+
+                if (!neighborsToCheck.test(i))
+                    continue; // Skip already checked neighbors
+
+                const Coord &n = neighbors[i];
+
                 if (x + n.x < 0 || x + n.x >= classicFont.width ||
                     y + n.y < 0 || y + n.y >= classicFont.height)
+                {
+                    // TODO: deepest part
+                    neighborsToCheck.reset(i);
                     continue; // Skip out of bounds neighbors
+                }
 
                 if (m_targetCharBitmap.pixel(x + n.x, y + n.y) &&
                     !frame.pixel(m_x + x + n.x, m_y + y + n.y))
@@ -112,7 +128,8 @@ void AnimatedChar::renderChar(Bitmap &frame, bool fullRefresh, char c)
                     frame.putPixel(m_x + x + n.x, m_y + y + n.y, true);
                     moved = true;
                     break;
-                }
+                } else
+                    neighborsToCheck.reset(i);
             } 
 
             // Leave the loop if a pixel has been move.
@@ -124,11 +141,11 @@ void AnimatedChar::renderChar(Bitmap &frame, bool fullRefresh, char c)
             }
             else
             {
-                moveablePixels &= ~(1 << pixelRank); // Remove this pixel from the moveable pixels
+                moveablePixels.reset(pixelRank); // Remove this pixel from the moveable pixels
             }
         }
 
-        if (moveablePixels == 0)
+        if (moveablePixels.none())
         {
             TRACE << "All pixels moved";
           
