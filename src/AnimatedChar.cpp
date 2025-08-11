@@ -82,59 +82,8 @@ void AnimatedChar::renderChar(Bitmap &frame, bool fullRefresh, char c)
             int x, y;
             pixelCoordAtRank(frame, x, y, pixelRank);
 
-            // Adopt the state of this pixel in the target character.
-            bool moved = false; 
-            if (frame.pixel(m_x + x, m_y + y) != m_targetCharBitmap.pixel(x, y))
-            {
-                frame.putPixel(m_x + x, m_y + y, m_targetCharBitmap.pixel(x, y));
-                moved = true;
-            }
-            
-            // Check if the state of the pixel can also be moved to a neighbor pixel. If so, move it.
-            struct Coord
-            {
-                int x, y;
-            };
-            Coord neighbors[] = {
-                {-1, 0}, {0, -1}, {0, 1}, {1, 0}, 
-                {1, 1}, {-1, -1}, {-1, 1},{1, -1},
-            };
-            static const int NEIGHBORS_COUNT = sizeof(neighbors) / sizeof(Coord);
-
-            std::bitset<NEIGHBORS_COUNT> neighborsToCheck;
-            for (int i = 0; i < NEIGHBORS_COUNT; i++)
-                neighborsToCheck.set(i);
-
-            while (neighborsToCheck.any())
-            {
-                int i = Platform::randomNumber32() % NEIGHBORS_COUNT;
-
-                if (!neighborsToCheck.test(i))
-                    continue; // Skip already checked neighbors
-
-                const Coord &n = neighbors[i];
-
-                if (x + n.x < 0 || x + n.x >= classicFont.width ||
-                    y + n.y < 0 || y + n.y >= classicFont.height)
-                {
-                    // TODO: deepest part
-                    neighborsToCheck.reset(i);
-                    continue; // Skip out of bounds neighbors
-                }
-
-                if (m_targetCharBitmap.pixel(x + n.x, y + n.y) &&
-                    !frame.pixel(m_x + x + n.x, m_y + y + n.y))
-                {
-                    frame.putPixel(m_x + x + n.x, m_y + y + n.y, true);
-                    moved = true;
-                    break;
-                } else
-                    neighborsToCheck.reset(i);
-            } 
-
-            // Leave the loop if a pixel has been move.
-            if (moved)
-//TODO: shorten the method
+            // Leave the loop if a pixel has been moved.
+            if (tryToMovePixel(frame, x, y))
             {
                 TRACE << "Moved pixel at" << x << y;
                 break;
@@ -148,12 +97,63 @@ void AnimatedChar::renderChar(Bitmap &frame, bool fullRefresh, char c)
         if (moveablePixels.none())
         {
             TRACE << "All pixels moved";
-          
             
-            // If all pixels have been moved, stop transitioning.
+            // Since all pixels have been moved, stop transitioning.
             m_transitioning = false;
         }
     }
+}
+
+bool AnimatedChar::tryToMovePixel(Bitmap &frame, int x, int y)
+{
+    // Adopt the state of this pixel in the target character.
+    bool moved = false; 
+    if (frame.pixel(m_x + x, m_y + y) != m_targetCharBitmap.pixel(x, y))
+    {
+        frame.putPixel(m_x + x, m_y + y, m_targetCharBitmap.pixel(x, y));
+        moved = true;
+    }
+            
+    // Check if the state of the pixel can also be moved to a neighbor pixel. If so, move it.
+    struct Coord
+    {
+        int x, y;
+    };
+    Coord neighbors[] = {
+        {-1, 0}, {0, -1}, {0, 1}, {1, 0}, 
+        {1, 1}, {-1, -1}, {-1, 1},{1, -1},
+    };
+    static const int NEIGHBORS_COUNT = sizeof(neighbors) / sizeof(Coord);
+    std::bitset<NEIGHBORS_COUNT> neighborsToCheck;
+    for (int i = 0; i < NEIGHBORS_COUNT; i++)
+        neighborsToCheck.set(i);
+    while (neighborsToCheck.any())
+    {
+        int i = Platform::randomNumber32() % NEIGHBORS_COUNT;
+
+        if (!neighborsToCheck.test(i))
+            continue; // Skip already checked neighbors
+
+        const Coord &n = neighbors[i];
+
+        if (x + n.x < 0 || x + n.x >= classicFont.width ||
+            y + n.y < 0 || y + n.y >= classicFont.height)
+        {
+            neighborsToCheck.reset(i);
+            continue; // Skip out of bounds neighbors
+        }
+
+        if (m_targetCharBitmap.pixel(x + n.x, y + n.y) &&
+            !frame.pixel(m_x + x + n.x, m_y + y + n.y))
+        {
+            frame.putPixel(m_x + x + n.x, m_y + y + n.y, true);
+            moved = true;
+            break;
+        } else
+            neighborsToCheck.reset(i);
+    }
+
+    return moved;
 }
 
 void AnimatedChar::pixelCoordAtRank(Bitmap &frame, int &x, int &y, int pixelRank)

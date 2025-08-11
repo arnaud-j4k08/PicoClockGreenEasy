@@ -17,6 +17,7 @@ public:
 
 private:
     void pixelCoordAtRank(Bitmap &frame, int &x, int &y, int rank);
+    bool tryToMovePixel(Bitmap &frame, int x, int y);
 
     int m_x, m_y; // Position of the character in the frame
     char m_targetChar = 0;
