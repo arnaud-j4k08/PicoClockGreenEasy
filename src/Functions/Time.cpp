@@ -155,7 +155,7 @@ void Time::renderHourMinProgressBar(
 void Time::renderHourMin(
     Bitmap &frame, int editedValueIndex, int blinkingCounter, bool fullRefresh)
 {
-    // TODO: use it also for the thermometer
+    // TODO: prevent triple redrawing at startup
     // TODO: °F and °C indicators do not always turn off after end of synchronization
 
     if (settings().digitAnimation && editedValueIndex == NoEditing)

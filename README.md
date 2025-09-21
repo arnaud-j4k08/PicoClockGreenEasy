@@ -21,9 +21,9 @@ This project is an easy-to-use firmware for the Waveshare Pico-Clock-Green writt
     - automatic daylight saving time observation (currently only for European Union and USA)
 - user interface:
     - menu based user interface with horizontal and vertical scrolling
-    - instant start up: no splash screen or animation, just power the device and you have a clock
+    - instant start up: no splash screen, just power the device and you have a clock
     - 3 time display styles: hour:min:sec, hour:min + bar (the bar is a kind of horizontal hourglass to show seconds), hour:min
-    - digit animation: If enabled, whenever it is time for a digit to change, it gets progressively transformed into the next one, creating an interesting visual effect. This is used when displaying time in the hour:min style.
+    - digit animation: If enabled, whenever it is time for a digit to change, it gets progressively transformed into the next one, creating an interesting visual effect. This is used when displaying time in the hour:min style or the temperature.
     - configurable date format: 5 formats with different orders and separators
     - configurable brightness: 
       - if auto light is disabled, the brightness can be set as a percentage

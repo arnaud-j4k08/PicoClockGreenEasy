@@ -4,6 +4,8 @@
 
 #include <cmath>
 
+#include "PicoClockHw/Platform.h"
+
 bool Temperature::isAvailable() const
 {
     return clock().hasRtc();
@@ -11,59 +13,84 @@ bool Temperature::isAvailable() const
 
 void Temperature::activate()
 {
-    // Toggle the temperature format and refresh
+    // Toggle the temperature format
     modifySettings().useCelsius = !settings().useCelsius;
-    forceRefresh();
 }
 
 void Temperature::renderFrame(
     Bitmap &frame, int editedValueIndex, int blinkingCounter, bool fullRefresh)
 {
-    if ((!fullRefresh && clock().tickCount() != 0) || clock().rtc() == nullptr) return;
-
-    TRACE << "Get temperature";
-    float temp = clock().rtc()->temperature();
-
-    if (std::isnan(temp))
-        return;
+    // Read the temperature from the RTC once per second or if it has not been measured yet.
+    if (
+        clock().rtc() != nullptr && 
+        (clock().tickCount() == 0 || std::isnan(m_lastMeasuredTempCelsius)))
+    {
+        m_lastMeasuredTempCelsius = clock().rtc()->temperature();
 
 #ifdef RTC_TEMP_CALIB
-        // RTC Temperature calibration 
-    temp += RTC_TEMP_CALIB;
+        if (!std::isnan(m_lastMeasuredTempCelsius))
+        {
+            // RTC Temperature calibration 
+            m_lastMeasuredTempCelsius += RTC_TEMP_CALIB;
+        }
 #endif
-
-    if (!settings().useCelsius)
-        temp = temp * 9 / 5 + 32;
-
-    frame.clear();
-    frame.setFont(&classicFont);
-
-    if (temp < 0)
-    {
-        // Draw a minus sign
-        frame.drawRectangle(0, 3, 1, 3, true);
-        
-        // Use the absolute value in the rest of the function
-        temp = -temp; 
     }
 
-    char tempString[5];
-    sprintf(tempString, "%4.1f", temp);
-    TRACE <<SetAutoSpace(false) << "tempString: '" << tempString << "'";
+    // On full refresh, clear the frame and draw the static elements (dot and degree sign)
+    if (fullRefresh)
+    {
+        frame.clear();
 
-    frame.drawChar(14, 0, tempString[3]);
-    frame.putPixel(12, 6, true);
-    tempString[2] = 0;
-    frame.drawText(2, 0, tempString);
+        // Draw the dot
+        frame.putPixel(12, 6, true);
 
-    // Draw the degree sign
-    frame.putPixel(20, 0, true);
-    frame.putPixel(19, 1, true);
-    frame.putPixel(21, 1, true);
-    frame.putPixel(20, 2, true);
+        // Draw the degree sign
+        frame.putPixel(20, 0, true);
+        frame.putPixel(19, 1, true);
+        frame.putPixel(21, 1, true);
+        frame.putPixel(20, 2, true);
+    }
 
-    if (settings().useCelsius)
-        frame.putIndicator(Bitmap::C, true);
-    else
-        frame.putIndicator(Bitmap::F, true);
+    // Draw the C or F indicator
+    frame.putIndicator(Bitmap::C, settings().useCelsius);
+    frame.putIndicator(Bitmap::F, !settings().useCelsius);
+
+    // Do not display anything else if the temperature could not be measured
+    if (std::isnan(m_lastMeasuredTempCelsius))
+        return;
+
+    // Convert to Fahrenheit if needed
+    float displayedTemp = m_lastMeasuredTempCelsius;
+    if (!settings().useCelsius)
+        displayedTemp = displayedTemp * 9 / 5 + 32;
+
+    // Draw or remove the minus sign and use the absolute value if negative
+    frame.drawRectangle(0, 3, 1, 3, displayedTemp < 0);
+    if (displayedTemp < 0)
+        displayedTemp = -displayedTemp; 
+
+    // Draw the temperature value with or without animation
+    int decimalChar = '0' + static_cast<int>(displayedTemp * 10) % 10;
+    if (settings().digitAnimation)
+    {
+        AnimatedChar::render2DigitsInt(
+            m_digit1, m_digit2, frame, fullRefresh, static_cast<int>(displayedTemp));
+        m_digit3.renderChar(
+            frame, 
+            fullRefresh, 
+            decimalChar);
+    } else
+    {
+        if (displayedTemp != m_displayedTemp || fullRefresh)
+        {
+            TRACE <<"fullRefresh: " << fullRefresh;
+            m_displayedTemp = displayedTemp;
+            TRACE <<"Display temp: " << displayedTemp;
+            frame.drawRectangle(2, 0, 10, 6, false);
+            frame.setFont(&classicFont);
+            frame.draw2DigitsInt(2, 0, static_cast<int>(displayedTemp));
+            frame.drawRectangle(14, 0, 17, 6, false);
+            frame.drawChar(14, 0, decimalChar);
+        }
+    }
 }
